@@ -1,0 +1,170 @@
+/* Circle of fifths */
+.circle-wrap { display: flex; justify-content: center; align-items: center; padding: 20px; margin: 12px 0; }
+.circle-svg { max-width: 420px; width: 100%; height: auto; }
+.circle-svg text { font-family: inherit; font-weight: 600; pointer-events: none; }
+.circle-svg .circle-outer { fill: none; stroke: var(--border); stroke-width: 1; }
+.circle-svg .circle-inner { fill: none; stroke: var(--border); stroke-width: 1; }
+.circle-svg .sector { cursor: pointer; transition: opacity 0.15s; }
+.circle-svg .sector:hover { opacity: 0.75; }
+.circle-svg .sector.dimmed { opacity: 0.4; }
+.circle-svg .major-label { font-size: 18px; }
+.circle-svg .minor-label { font-size: 13px; }
+.circle-svg .center-label { font-size: 12px; fill: var(--muted); font-weight: 400; }
+
+/* Octave + Nashville tables */
+.octave-table { font-size: 13px; }
+.octave-table td { padding: 6px 10px; }
+.octave-table .highlight-row { background: rgba(240,162,74,0.12); }
+[data-theme="light"] .octave-table .highlight-row { background: #f0f0f0; }
+[data-theme="colorful"] .octave-table .highlight-row { background: rgba(255,0,170,0.15); }
+
+.nash-table { font-size: 13px; margin-top: 8px; }
+.nash-table td { padding: 6px 10px; }
+.nash-table .n1 { color: var(--root); font-weight: 700; }
+
+.trick-table { font-size: 13px; min-width: 560px; }
+.trick-table td { vertical-align: top; padding: 6px 10px; }
+
+/* Metronome */
+.metro-display {
+  font-size: 56px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--accent);
+  margin: 20px 0 4px;
+  font-variant-numeric: tabular-nums;
+}
+.metro-position {
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 16px;
+  letter-spacing: 0.3px;
+}
+.metro-beat {
+  display: inline-block;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--border);
+  margin: 0 4px;
+  vertical-align: middle;
+}
+.metro-beat.sub {
+  width: 9px; height: 9px;
+  opacity: 0.8;
+}
+.metro-beat.active { background: var(--accent); }
+.metro-beat.accent { background: var(--root); box-shadow: 0 0 0 2px var(--text); }
+
+/* Quiz question box (for fretboard quizzes) */
+.fb-question {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+  font-size: 17px;
+  margin-bottom: 12px;
+}
+
+/* ---- Practice timer badge ---- */
+.timer-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.timer-badge.fast {
+  background: var(--good);
+  color: #fff;
+}
+.timer-badge.medium {
+  background: var(--accent);
+  color: #fff;
+}
+.timer-badge.slow {
+  background: var(--bad);
+  color: #fff;
+}
+
+/* ---- Scale practice controls ---- */
+.scale-practice-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 16px 0;
+  padding: 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.scale-practice-row label {
+  font-size: 13px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.scale-practice-row .sp-status {
+  font-size: 13px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* ---- Reference song tooltips on ear training buttons ---- */
+.chord-btn[title] {
+  cursor: help;
+}
+.chord-btn[title]:hover::after {
+  /* Optional: keep the native tooltip — no custom styling needed */
+}
+
+/* ---- "Why" explanation box ---- */
+.why-box {
+  background: var(--panel2);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin: 12px 0 0 0;
+  font-size: 13px;
+  color: var(--text);
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  line-height: 1.7;
+}
+.why-box .step {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+.why-box .result {
+  color: var(--good);
+  font-weight: 700;
+}
+.why-box button {
+  font-family: inherit;
+  margin-left: 8px;
+}
+
+/* ---- Preset save prompt (inline) ---- */
+.preset-prompt {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.preset-prompt input {
+  padding: 6px 8px;
+  font-size: 13px;
+  border-radius: 6px;
+  background: var(--panel2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  font-family: inherit;
+  width: 140px;
+}
+

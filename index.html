@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interval Lab — learn guitar theory through intervals</title>
+<link rel="icon" href="assets/mascot.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/themes.css">
+<link rel="stylesheet" href="css/tabs.css">
+<link rel="stylesheet" href="css/fretboard.css">
+</head>
+<body>
+<img src="assets/mascot.svg" alt="" class="brand-watermark" aria-hidden="true">
+<button type="button" class="icon-btn nav-toggle" id="navToggle" aria-label="Menu" title="Menu">☰</button>
+<nav class="main-nav" id="mainNav">
+  <div class="nav-brand"><img src="assets/mascot.svg" alt="" class="nav-brand-icon">Interval Lab</div>
+  <button data-tab="learn" class="active"><span class="bn-icon">🧭</span><span class="bn-label">Learn</span></button>
+  <button data-tab="guitar"><span class="bn-icon">🎸</span><span class="bn-label">Fretboard</span></button>
+  <button data-tab="ear"><span class="bn-icon">👂</span><span class="bn-label">Ear</span></button>
+  <button data-tab="practice"><span class="bn-icon">🎯</span><span class="bn-label">Practice</span></button>
+  <button data-tab="ref"><span class="bn-icon">📚</span><span class="bn-label">Reference</span></button>
+  <button data-tab="metro"><span class="bn-icon">⏱️</span><span class="bn-label">Metronome</span></button>
+  <button data-tab="settings"><span class="bn-icon">⚙️</span><span class="bn-label">Settings</span></button>
+</nav>
+
+<main>
+  <section id="learn" class="tab active"></section>
+  <section id="guitar" class="tab"></section>
+  <section id="ear" class="tab"></section>
+  <section id="practice" class="tab"></section>
+  <section id="ref" class="tab"></section>
+  <section id="metro" class="tab"></section>
+</main>
+
+<div class="info-modal" id="infoModal" hidden>
+  <div class="info-modal-backdrop"></div>
+  <div class="info-modal-box" role="dialog" aria-modal="true" aria-labelledby="infoModalTitle">
+    <button type="button" class="info-modal-close" id="infoModalClose" aria-label="Close">✕</button>
+    <h3 id="infoModalTitle"></h3>
+    <div id="infoModalBody"></div>
+  </div>
+</div>
+
+<div class="info-modal settings-modal" id="settingsModal" hidden>
+  <div class="info-modal-backdrop"></div>
+  <div class="info-modal-box settings-modal-box" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
+    <button type="button" class="info-modal-close" id="settingsModalClose" aria-label="Close">✕</button>
+    <h3 id="settingsModalTitle">⚙️ Settings</h3>
+    <div id="settingsModalBody">
+
+      <div class="settings-section">
+        <h4>Look</h4>
+        <div class="theme-switch" id="themeSwitch">
+          <button data-theme-btn="dark" class="active" title="Studio — warm, low-light, easy on the eyes">🌙 Studio</button>
+          <button data-theme-btn="light" title="Blueprint — print-friendly, high contrast">☀️ Blueprint</button>
+          <button data-theme-btn="colorful" title="Neon — vivid and saturated">🌈 Neon</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h4>Presets</h4>
+        <div class="preset-bar" id="presetBar">
+          <label>Preset
+            <select id="presetSelect">
+              <option value="">— none —</option>
+            </select>
+          </label>
+          <button class="play-btn" id="presetLoad">Load</button>
+          <button class="play-btn" id="presetSaveAs">Save as…</button>
+          <button class="play-btn" id="presetDelete">Delete</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h4>Tuning</h4>
+        <div class="settings-row">
+          <label for="settingsTuning">Guitar tuning</label>
+          <select id="settingsTuning"></select>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h4>Fretboard</h4>
+        <div id="fretboardControls"></div>
+      </div>
+
+      <div class="settings-section">
+        <h4>Notation</h4>
+        <div class="settings-row">
+          <label for="noteNames">Note names</label>
+          <select id="noteNames">
+            <option value="letters">Letters (C D E…)</option>
+            <option value="solfege">Solfège (Do Re Mi…)</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <label for="accidentalPref">Accidentals</label>
+          <select id="accidentalPref">
+            <option value="both">Both (C# / Db)</option>
+            <option value="sharps">Sharps only (C#)</option>
+            <option value="flats">Flats only (Db)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h4>Navigation</h4>
+        <div class="settings-row">
+          <label for="navPosition">Menu position</label>
+          <select id="navPosition">
+            <option value="top">Top</option>
+            <option value="bottom">Bottom</option>
+            <option value="left">Left side</option>
+            <option value="right">Right side</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <label for="navMobileStyle">On phones</label>
+          <select id="navMobileStyle">
+            <option value="dropdown">Compact (☰ button)</option>
+            <option value="bar">Always visible</option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

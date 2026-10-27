@@ -1,0 +1,45 @@
+version: 0.2
+
+env:
+  shell: bash
+
+phases:
+  pre_build:
+    commands:
+      - echo "Logging in to ECR..."
+      - aws ecr get-login-password --region "$AWS_DEFAULT_REGION" | docker login --username AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
+      - IMAGE_TAG="${CODEBUILD_RESOLVED_SOURCE_VERSION:0:12}"
+      - ECR_URI="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME"
+      - echo "Building image tag $IMAGE_TAG"
+
+  build:
+    commands:
+      - docker build -t "$ECR_URI:$IMAGE_TAG" .
+      - docker push "$ECR_URI:$IMAGE_TAG"
+
+  post_build:
+    commands:
+      - |
+        echo "Waiting for ECR image scan to complete..."
+        for i in $(seq 1 24); do
+          STATUS=$(aws ecr describe-image-scan-findings --repository-name "$ECR_REPO_NAME" --image-id imageTag="$IMAGE_TAG" --region "$AWS_DEFAULT_REGION" --query 'imageScanStatus.status' --output text 2>/dev/null || echo "IN_PROGRESS")
+          echo "Scan status: $STATUS"
+          if [ "$STATUS" = "COMPLETE" ] || [ "$STATUS" = "FAILED" ]; then break; fi
+          sleep 5
+        done
+      - |
+        CRITICAL=$(aws ecr describe-image-scan-findings --repository-name "$ECR_REPO_NAME" --image-id imageTag="$IMAGE_TAG" --region "$AWS_DEFAULT_REGION" --query 'imageScanFindings.findingSeverityCounts.CRITICAL' --output text 2>/dev/null || echo "0")
+        HIGH=$(aws ecr describe-image-scan-findings --repository-name "$ECR_REPO_NAME" --image-id imageTag="$IMAGE_TAG" --region "$AWS_DEFAULT_REGION" --query 'imageScanFindings.findingSeverityCounts.HIGH' --output text 2>/dev/null || echo "0")
+        [ "$CRITICAL" = "None" ] && CRITICAL=0
+        [ "$HIGH" = "None" ] && HIGH=0
+        echo "Critical findings: $CRITICAL, High findings: $HIGH"
+        if [ "$CRITICAL" != "0" ] || [ "$HIGH" != "0" ]; then
+          echo "Build failed: $CRITICAL CRITICAL / $HIGH HIGH vulnerabilities found in image"
+          exit 1
+        fi
+      - echo "$IMAGE_TAG" > imagetag.txt
+      - cat imagetag.txt
+
+artifacts:
+  files:
+    - imagetag.txt

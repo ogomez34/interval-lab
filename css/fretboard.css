@@ -1,0 +1,297 @@
+.fretboard-wrap { overflow-x: auto; padding: 12px 0 20px 0; }
+.fretboard {
+  position: relative;
+  display: grid;
+  grid-template-columns: 44px repeat(14, 54px);
+  grid-template-rows: 22px repeat(6, 34px);
+  background: var(--fret-bg);
+  border: 2px solid var(--fret-border);
+  border-radius: 8px;
+  padding: 4px;
+  min-width: max-content;
+  gap: 0;
+}
+.fb-fretnum {
+  color: var(--muted);
+  font-size: 11px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.fb-fretnum::before {
+  content: "";
+  position: absolute;
+  left: -2px;
+  top: 0; bottom: -100%;
+  width: 2px;
+  background: var(--fret-wire);
+}
+.fb-fretnum.nut::before { background: var(--fret-nut); width: 4px; left: -3px; }
+.fb-string-name {
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.25);
+  border-right: 1px solid var(--fret-border);
+}
+[data-theme="light"] .fb-string-name { background: rgba(0,0,0,0.06); }
+[data-theme="colorful"] .fb-string-name { background: rgba(255,0,170,0.15); }
+.fb-string {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.fb-string::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0;
+  top: 50%;
+  height: 2px;
+  background: var(--fret-string);
+  transform: translateY(-50%);
+  pointer-events: none;
+  border-radius: 1px;
+}
+.fb-string.thick::before { height: 4px; background: var(--fret-string-thick); }
+.fb-string.thick2::before { height: 3px; }
+.fb-cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  user-select: none;
+  z-index: 2;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  margin: auto;
+  background: transparent;
+  border: 1px solid transparent;
+  transition: transform 0.08s, background 0.1s;
+}
+.fb-cell:hover {
+  background: var(--accent);
+  color: #fff;
+  transform: scale(1.08);
+  border-color: transparent;
+}
+.fb-cell.root {
+  background: var(--root);
+  color: #1a1a1a;
+  border-color: var(--root);
+  font-weight: 700;
+  /* Colour-blind cue: home gets a solid ring, in-scale gets a dashed border. */
+  box-shadow: 0 0 0 2px var(--text);
+}
+.fb-cell.scale {
+  background: var(--scale-cell);
+  border-color: var(--scale-cell-border);
+  border-style: dashed;
+  color: #fff;
+}
+[data-theme="dark"] .fb-cell.scale { color: #fff; }
+[data-theme="colorful"] .fb-cell.scale { color: #0a0014; font-weight: 700; }
+.fb-cell.scale.root { background: var(--root); color: #1a1a1a; border-style: solid; }
+/* Scale shapes by neck region — the same pattern, coloured per position */
+.fb-cell.scale.pos-1 { background: var(--scale-pos1); border-color: var(--scale-pos1-border); }
+.fb-cell.scale.pos-2 { background: var(--scale-pos2); border-color: var(--scale-pos2-border); }
+/* Shared frets between two shapes get a diagonal two-colour split */
+.fb-cell.scale.both-01 {
+  background: linear-gradient(135deg, var(--scale-cell) 50%, var(--scale-pos1) 50%);
+  border-color: var(--scale-pos1-border);
+}
+.fb-cell.scale.both-12 {
+  background: linear-gradient(135deg, var(--scale-pos1) 50%, var(--scale-pos2) 50%);
+  border-color: var(--scale-pos2-border);
+}
+[data-theme="light"] .fb-cell.scale.pos-1,
+[data-theme="light"] .fb-cell.scale.pos-2,
+[data-theme="light"] .fb-cell.scale.both-01,
+[data-theme="light"] .fb-cell.scale.both-12 { color: #1a1a1a; }
+.fb-cell.nash {
+  background: var(--nash-cell);
+  border-color: var(--nash-cell-border);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+[data-theme="light"] .fb-cell.nash { color: #fff; }
+[data-theme="colorful"] .fb-cell.nash { color: #fff; }
+.fb-cell.nash.root {
+  background: var(--root);
+  color: #1a1a1a;
+  border-color: var(--root);
+}
+.fb-cell.quiz-target {
+  outline: 3px solid var(--accent);
+  outline-offset: 1px;
+  animation: pulse 1s infinite;
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(240,162,74,0.7); }
+  50% { box-shadow: 0 0 0 6px rgba(240,162,74,0); }
+}
+.fb-cell.correct-flash { background: var(--good) !important; color: #fff !important; }
+.fb-cell.wrong-flash { background: var(--bad) !important; color: #fff !important; }
+/* Colour-blind cue: quiz results show ✓ / ✕, not just green / red. */
+.fb-cell.quiz-correct::after,
+.fb-cell.wrong-flash::after {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  pointer-events: none;
+}
+.fb-cell.quiz-correct::after { content: "✓"; }
+.fb-cell.wrong-flash::after { content: "✕"; }
+
+/* ---- Octave twin finder ---- */
+.fb-cell.octave-origin {
+  outline: 3px solid var(--root);
+  outline-offset: 1px;
+  z-index: 11;
+}
+.fb-cell.octave-twin {
+  background: var(--root) !important;
+  color: #1a1a1a !important;
+  border-color: var(--root) !important;
+  box-shadow: 0 0 10px var(--root);
+  transform: scale(1.12);
+  z-index: 10;
+}
+
+.fb-inlay {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px; height: 10px;
+  background: var(--fret-inlay);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.75;
+  pointer-events: none;
+  z-index: 1;
+}
+.fb-inlay.double-top { top: 30%; }
+.fb-inlay.double-bottom { top: 70%; }
+
+/* ---- Fret landmarks (subtle emphasis) ---- */
+.fb-fretnum.landmark {
+  color: var(--text);
+  font-weight: 700;
+}
+.fb-fretnum.landmark::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px; height: 4px;
+  background: var(--fret-inlay);
+  border-radius: 50%;
+  opacity: 0.6;
+}
+.fb-fretnum.octave {
+  color: var(--accent);
+  font-weight: 700;
+}
+.fb-fretnum.octave::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px; height: 4px;
+  background: var(--accent);
+  border-radius: 2px;
+  opacity: 0.8;
+}
+
+/* ---- Scale practice highlight ---- */
+.fb-cell.scale-playing {
+  background: var(--accent) !important;
+  color: #fff !important;
+  transform: scale(1.2);
+  box-shadow: 0 0 12px var(--accent);
+  z-index: 10;
+}
+
+/* ---- Chord shape mini-diagram ---- */
+.shape-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 12px 0;
+}
+.shape-card {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+}
+.shape-card .shape-name {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+.shape-card .shape-desc {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+.shape-svg {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  height: auto;
+}
+.shape-svg .string-line { stroke: var(--muted); stroke-width: 1; }
+.shape-svg .fret-line { stroke: var(--muted); stroke-width: 1; }
+.shape-svg .nut-line { stroke: var(--text); stroke-width: 3; }
+.shape-svg .finger-dot { fill: var(--root); stroke: #1a1a1a; stroke-width: 1; }
+.shape-svg .finger-label {
+  font-size: 9px;
+  font-weight: 700;
+  fill: #1a1a1a;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+.shape-svg .open-circle {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 1.5;
+}
+.shape-svg .muted-x {
+  font-size: 11px;
+  font-weight: 700;
+  fill: var(--bad);
+  text-anchor: middle;
+}
+.shape-svg .fret-number {
+  font-size: 9px;
+  fill: var(--muted);
+  text-anchor: middle;
+}
+.shape-svg .barre-line {
+  stroke: var(--root);
+  stroke-width: 8;
+  stroke-linecap: round;
+  opacity: 0.85;
+}

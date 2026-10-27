@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Notes Maker mascot: sheep head, flat/geometric, teen-oriented redesign -->
+
+  <!-- wool, blunt rounded lobes instead of soft clouds or sharp spikes -->
+  <path d="M100 20
+           Q118 18 122 34
+           Q138 24 146 40
+           Q164 36 166 54
+           Q184 58 180 76
+           Q194 88 182 100
+           Q190 116 174 122
+           Q176 140 158 138
+           Q152 154 134 146
+           Q124 160 106 150
+           Q94 160 76 150
+           Q66 160 54 146
+           Q36 154 30 138
+           Q12 140 14 122
+           Q-2 116 6 100
+           Q-6 88 8 76
+           Q4 58 22 54
+           Q24 36 42 40
+           Q50 24 66 34
+           Q70 18 100 20 Z"
+        fill="#e7e0d2" stroke="#c9bfa9" stroke-width="2.5" stroke-linejoin="round"/>
+
+  <!-- face plate -->
+  <path d="M100 56
+           C130 56 150 78 150 108
+           C150 134 128 152 100 152
+           C72 152 50 134 50 108
+           C50 78 70 56 100 56 Z"
+        fill="#362a22"/>
+
+  <!-- ears -->
+  <path d="M46 92 C30 86 24 100 34 112 C40 120 50 118 52 108 Z" fill="#362a22"/>
+  <path d="M154 92 C170 86 176 100 166 112 C160 120 150 118 148 108 Z" fill="#362a22"/>
+
+  <!-- raised eyebrow for attitude -->
+  <path d="M68 92 L92 86" stroke="#1c1512" stroke-width="5" stroke-linecap="round"/>
+  <path d="M110 88 L132 92" stroke="#1c1512" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- sharp, confident eyes -->
+  <path d="M68 102 L96 100 L96 108 L68 110 Z" fill="#f4efe4"/>
+  <circle cx="86" cy="104" r="5.5" fill="#15100d"/>
+  <path d="M106 100 L134 104 L134 112 L106 108 Z" fill="#f4efe4"/>
+  <circle cx="121" cy="105.5" r="5.5" fill="#15100d"/>
+
+  <!-- smirk, not a goofy open grin -->
+  <path d="M84 126 Q100 134 118 124" fill="none" stroke="#f4efe4" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- single ear piercing for teen edge, uses brand accent color -->
+  <circle cx="153" cy="114" r="4" fill="#f0a24a"/>
+</svg>
