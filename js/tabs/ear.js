@@ -1,44 +1,27 @@
-import { INTERVALS, CHORD_TYPES, EAR_STAGES, intervalDetail, $, randomChoice } from '../music.js';
-import { playMidi, playSequence, playChord } from '../audio.js';
+import { INTERVALS, EAR_STAGES, intervalDetail, $, randomChoice } from '../music.js';
+import { playMidi, playSequence } from '../audio.js';
 import { recordAttempt, getSetting, setSetting } from '../storage.js';
 
-const EAR_CHORD_TYPE_NAMES = [
-  'Major', 'Minor', 'Diminished', 'Augmented', 'Dominant 7', 'Major 7', 'Minor 7'
-];
-const EAR_CHORD_TYPES = Object.fromEntries(
-  EAR_CHORD_TYPE_NAMES.map(name => [name, CHORD_TYPES[name]])
-);
-
 let earState = {
-  mode: 'interval', // 'interval' | 'chord'
   score:0, streak:0, best:0, correct:0, total:0,
   current:null, answered:false,
   questionStartMs:0
 };
 
 export function renderEar() {
-  const mode = getSetting('earMode', 'interval');
-  const intervalSel = mode === 'interval' ? 'selected' : '';
-  const chordSel = mode === 'chord' ? 'selected' : '';
   return `
     <h2>👂 Ear Training</h2>
-    <p id="earIntro">Listen closely — two notes play, one after the other. Can you guess how far apart they are?</p>
+    <p>Listen closely — two notes play, one after the other. Can you guess how far apart they are?</p>
 
     <div class="controls">
-      <label>Mode
-        <select id="earMode">
-          <option value="interval" ${intervalSel}>Intervals</option>
-          <option value="chord" ${chordSel}>Chords</option>
-        </select>
-      </label>
-      <label id="earDirLabel">Direction
+      <label>Direction
         <select id="earDir">
           <option value="up">Ascending</option>
           <option value="down">Descending</option>
           <option value="both">Both</option>
         </select>
       </label>
-      <label id="earDiffLabel">Stage
+      <label>Stage
         <select id="earStage"></select>
       </label>
     </div>
@@ -66,7 +49,7 @@ export function renderEar() {
     </div>
 
     <p style="color:var(--muted);font-size:13px;margin-top:20px;">
-      <b>Shortcuts:</b> <code>Enter</code> submit / next, <code>R</code> replay.
+      <b>Shortcuts:</b> <code>Enter</code> next, <code>R</code> replay.
     </p>
   `;
 }
@@ -76,54 +59,31 @@ function earIntervalName(semis) {
   return INTERVALS.find(i => i[0] === semis)[1];
 }
 
-const INTERVAL_REFERENCE_SONGS = {
-  'minor 2nd': 'Jaws theme',
-  'major 2nd': 'Happy Birthday',
-  'minor 3rd': 'Smoke on the Water (riff)',
-  'major 3rd': 'When the Saints Go Marching In',
-  'perfect 4th': 'Here Comes the Bride',
-  'tritone': 'The Simpsons theme',
-  'perfect 5th': 'Twinkle Twinkle Little Star',
-  'minor 6th': 'The Entertainer (Scott Joplin)',
-  'major 6th': 'My Bonnie Lies Over the Ocean',
-  'minor 7th': 'Somewhere (West Side Story)',
-  'major 7th': 'Take On Me (chorus)',
-  'octave': 'Somewhere Over the Rainbow'
-};
-
 function renderEarAnswers() {
   const container = $('earAnswers');
   container.innerHTML = '';
+  const stage = $('earStage').value || 'stage1';
+  const semis = EAR_STAGES[stage].semis;
+  const labels = new Set();
+  semis.forEach(s => labels.add(earIntervalName(s)));
+  labels.forEach(name => {
+    const btn = document.createElement('button');
+    btn.className = 'chord-btn';
+    btn.textContent = name;
+    btn.dataset.answer = name;
+    const song = intervalDetail(semisForName(name)).song;
+    if (song && song !== '—') btn.title = `Reference song: ${song}`;
+    btn.addEventListener('click', () => answerEar(name));
+    container.appendChild(btn);
+  });
+}
 
-  if (earState.mode === 'interval') {
-    const stage = $('earStage').value || 'stage1';
-    const semis = EAR_STAGES[stage].semis;
-    const labels = new Set();
-    semis.forEach(s => labels.add(earIntervalName(s)));
-    labels.forEach(name => {
-      const btn = document.createElement('button');
-      btn.className = 'chord-btn';
-      btn.textContent = name;
-      btn.dataset.answer = name;
-      const song = INTERVAL_REFERENCE_SONGS[name];
-      if (song) btn.title = `Reference song: ${song}`;
-      btn.addEventListener('click', () => answerEar(name));
-      container.appendChild(btn);
-    });
-  } else {
-    Object.keys(EAR_CHORD_TYPES).forEach(name => {
-      const btn = document.createElement('button');
-      btn.className = 'chord-btn';
-      btn.textContent = name;
-      btn.dataset.answer = name;
-      btn.addEventListener('click', () => answerEar(name));
-      container.appendChild(btn);
-    });
-  }
+function semisForName(name) {
+  const found = INTERVALS.find(i => i[1] === name);
+  return found ? found[0] : 12;
 }
 
 function newEarQ() {
-  const mode = earState.mode;
   earState.answered = false;
   $('earResult').textContent = '';
   $('earResult').className = 'result';
@@ -131,40 +91,19 @@ function newEarQ() {
   $('earReplayRoot').disabled = false;
   clearEarTimerBadge();
 
-  if (mode === 'interval') {
-    const dirSetting = $('earDir').value;
-    const direction = dirSetting === 'both' ? randomChoice([1,-1]) : (dirSetting === 'up' ? 1 : -1);
-    const stage = $('earStage').value || 'stage1';
-    const semis = randomChoice(EAR_STAGES[stage].semis);
-    const rootMidi = 55 + Math.floor(Math.random() * 12);
-    const targetMidi = rootMidi + direction * semis;
-    earState.current = {
-      mode: 'interval',
-      rootMidi, targetMidi, semis, direction,
-      name: earIntervalName(semis),
-      intervalKey: `${direction === 1 ? 'up' : 'down'}:${semis}`
-    };
-    $('earQ').textContent = `Direction: ${direction === 1 ? 'Up' : 'Down'}`;
-    setTimeout(() => playSequence([rootMidi, targetMidi], 0.7), 200);
-  } else {
-    const chordNames = Object.keys(EAR_CHORD_TYPES);
-    const chordName = randomChoice(chordNames);
-    const intervals = EAR_CHORD_TYPES[chordName];
-    const rootMidi = 55 + Math.floor(Math.random() * 12);
-    const midis = intervals.map(i => rootMidi + i);
-    earState.current = {
-      mode: 'chord',
-      rootMidi, midis,
-      name: chordName,
-      intervalKey: `chord:${chordName}`
-    };
-    $('earQ').textContent = `Chord — what quality?`;
-    setTimeout(() => {
-      // Play root first, then full chord
-      playMidi(rootMidi, 0.6);
-      setTimeout(() => playChord(midis, 1.4), 700);
-    }, 200);
-  }
+  const dirSetting = $('earDir').value;
+  const direction = dirSetting === 'both' ? randomChoice([1,-1]) : (dirSetting === 'up' ? 1 : -1);
+  const stage = $('earStage').value || 'stage1';
+  const semis = randomChoice(EAR_STAGES[stage].semis);
+  const rootMidi = 55 + Math.floor(Math.random() * 12);
+  const targetMidi = rootMidi + direction * semis;
+  earState.current = {
+    rootMidi, targetMidi, semis, direction,
+    name: earIntervalName(semis),
+    intervalKey: `${direction === 1 ? 'up' : 'down'}:${semis}`
+  };
+  $('earQ').textContent = `Direction: ${direction === 1 ? 'Up' : 'Down'}`;
+  setTimeout(() => playSequence([rootMidi, targetMidi], 0.7), 200);
 
   earState.questionStartMs = Date.now();
 }
@@ -174,9 +113,7 @@ function answerEar(guessName) {
   const elapsed = Date.now() - earState.questionStartMs;
   const correct = earState.current.name;
   const isCorrect = guessName === correct;
-  const detail = earState.current.mode === 'interval'
-    ? intervalDetail(earState.current.semis)
-    : null;
+  const detail = intervalDetail(earState.current.semis);
   earState.total++;
   if (isCorrect) {
     earState.correct++;
@@ -184,15 +121,11 @@ function answerEar(guessName) {
     earState.best = Math.max(earState.best, earState.streak);
     earState.score += 10;
     $('earResult').className = 'result good';
-    $('earResult').innerHTML = detail
-      ? `✓ Correct! <span class="note">${correct} — ${detail.sound}</span>`
-      : `✓ Correct! <span class="note">${correct}</span>`;
+    $('earResult').innerHTML = `✓ Correct! <span class="note">${correct} — ${detail.sound}</span>`;
   } else {
     earState.streak = 0;
     $('earResult').className = 'result bad';
-    $('earResult').innerHTML = detail
-      ? `✗ It was a <b>${correct}</b> — ${detail.quality}, ${detail.sound}. ${detail.song !== '—' ? `Think: <i>${detail.song}</i>.` : ''}`
-      : `✗ It was a <b>${correct}</b>.`;
+    $('earResult').innerHTML = `✗ It was a <b>${correct}</b> — ${detail.quality}, ${detail.sound}. ${detail.song !== '—' ? `Think: <i>${detail.song}</i>.` : ''}`;
   }
   $('earScore').textContent = earState.score;
   $('earStreak').textContent = earState.streak;
@@ -223,18 +156,7 @@ function clearEarTimerBadge() {
   badge.textContent = '';
 }
 
-function applyModeUI() {
-  const isChord = earState.mode === 'chord';
-  $('earDirLabel').style.display = isChord ? 'none' : 'flex';
-  $('earDiffLabel').style.display = isChord ? 'none' : 'flex';
-  $('earIntro').textContent = isChord
-    ? 'A few notes play together — is it happy, sad, tense, or dreamy? Guess the chord quality!'
-    : 'Listen closely — two notes play, one after the other. Can you guess how far apart they are?';
-}
-
 export function initEar() {
-  earState.mode = getSetting('earMode', 'interval');
-
   // Stage select (guided path from the Learn tab).
   const stageSel = $('earStage');
   Object.entries(EAR_STAGES).forEach(([key, stage]) => {
@@ -245,23 +167,9 @@ export function initEar() {
   });
   stageSel.value = getSetting('earStage', 'stage1');
 
-  $('earMode').addEventListener('change', (e) => {
-    earState.mode = e.target.value;
-    setSetting('earMode', earState.mode);
-    applyModeUI();
-    renderEarAnswers();
-    newEarQ();
-  });
-
   $('earStart').addEventListener('click', newEarQ);
   $('earReplay').addEventListener('click', () => {
-    if (!earState.current) return;
-    if (earState.current.mode === 'chord') {
-      playMidi(earState.current.rootMidi, 0.6);
-      setTimeout(() => playChord(earState.current.midis, 1.4), 700);
-    } else {
-      playSequence([earState.current.rootMidi, earState.current.targetMidi], 0.7);
-    }
+    if (earState.current) playSequence([earState.current.rootMidi, earState.current.targetMidi], 0.7);
   });
   $('earReplayRoot').addEventListener('click', () => {
     if (earState.current) playMidi(earState.current.rootMidi, 0.6);
@@ -291,6 +199,5 @@ export function initEar() {
     }
   });
 
-  applyModeUI();
   renderEarAnswers();
 }

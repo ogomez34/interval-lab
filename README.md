@@ -34,22 +34,21 @@ The Learn tab teaches the origin of the system, not just the rules:
 - The neck as an interval ruler — label modes: **Notes / Intervals / Nashville / Degrees** (scale degree + quality, e.g. `3 M3`).
 - **Root drone** — hold the root in your ear while you explore.
 - **Interval shape library** — pick any interval and see every practical move (same string, next string, two strings up) in your current tuning.
+- **Octave twins** — the one-note shortcut, with fret-count lines drawn on the neck.
 - Chord library with **interval degrees** labelled on every shape (`R · M3 · P5`).
-- Circle of fifths, octave twins, CAGED and the quick-distance guide.
 
 ### 👂 Ear
-- Interval ear training with five guided stages (not a random all-interval dump).
-- Chord-quality ear training.
+- Interval ear training with five guided stages (not a random all-interval dump), ascending/descending/both.
 - Quality feedback on every answer: *"✗ It was a minor 6th — imperfect, dark, longing. Think: The Entertainer."*
 
 ### 🎯 Practice
 - **Name the note / Name the interval / Hear and name** (text games with weak-spot drilling and per-interval stats).
-- **Find the note / Find them all / Find its octave twin** (fretboard games).
 - **Find the interval** — root lights up, tap every fret that makes the target interval.
 - **Hear it, play it** — the app plays root + note; you play it back on the neck.
+- **Find its octave twin** — the octave shape race.
 
 ### 📚 Reference
-- The full system in one place: number map, counting, octave twins, chord recipes, Nashville numbers, rhythm, circle of fifths, modes and solfège.
+- The interval-focused system in one place: number map, counting, octave twins, chord recipes, Nashville numbers, circle of fifths.
 - **Your interval heatmap** — every question you answer feeds a green/red map of the 12 intervals. Red means "it hears you".
 
 ### ⚙️ Settings (popup)
@@ -86,12 +85,11 @@ interval-lab/
     ├── events.js           # Tiny pub/sub for cross-module re-renders
     └── tabs/
         ├── learn.js        # Learn tab: theory course + guided path
-        ├── reference.js    # Reference tab (full theory guide + heatmap)
+        ├── reference.js    # Reference tab (theory guide + heatmap)
         ├── practice.js     # Practice games (text + fretboard)
-        ├── ear.js          # Ear training (staged intervals + chords)
-        ├── guitar.js       # Fretboard, drone, shape library, chords, CAGED
-        ├── chords.js       # Chord library (inside the Fretboard tab)
-        └── metro.js        # Metronome
+        ├── ear.js          # Ear training (staged intervals)
+        ├── guitar.js       # Fretboard, drone, shape library, chords
+        └── chords.js       # Chord library (inside the Fretboard tab)
 ```
 
 ## Development

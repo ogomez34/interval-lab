@@ -18,9 +18,8 @@ const DOM_FIELD_IDS = {
   practiceMode: 'practiceMode',
   practiceLevel: 'level',
   weakSpotMode: 'weakSpot',
-  earMode: 'earMode',
+  earStage: 'earStage',
   earDir: 'earDir',
-  earDiff: 'earDiff',
   noteNames: 'noteNames'
 };
 

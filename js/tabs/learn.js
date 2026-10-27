@@ -34,7 +34,7 @@ function renderPathSteps() {
     const done = acc !== null && acc >= 0.8;
     const accText = acc === null ? 'Not started' : `${Math.round(acc * 100)}%`;
     return `
-      <div class="path-step ${done ? 'done' : ''}">
+      <div class="path-step ${done ? 'done' : ''}" data-stage="${step.stage}">
         <span class="path-step-icon">${step.icon}</span>
         <span class="path-step-body">
           <span class="path-step-title">${step.title} ${done ? ' <span class="path-check">✓</span>' : ''}</span>
@@ -140,17 +140,30 @@ function goToTab(tab) {
 
 export function initLearn() {
   refreshTuningTricks();
-  document.querySelectorAll('.stage-ear-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      setSetting('earStage', btn.dataset.stage);
+
+  // Delegation on the document: refreshLearnPath() re-renders the path
+  // (replacing its children) whenever a tab is opened, so listeners attached
+  // directly to the stage buttons would be lost on the very first tab switch.
+  document.addEventListener('click', (e) => {
+    const earBtn = e.target.closest('.stage-ear-btn');
+    if (earBtn) {
+      setSetting('earStage', earBtn.dataset.stage);
       goToTab('ear');
-    });
-  });
-  document.querySelectorAll('.stage-find-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      setSetting('earStage', btn.dataset.stage);
+      return;
+    }
+    const findBtn = e.target.closest('.stage-find-btn');
+    if (findBtn) {
+      setSetting('earStage', findBtn.dataset.stage);
       setSetting('practiceMode', 'findInterval');
       goToTab('practice');
-    });
+      return;
+    }
+    // Clicking the stage card itself (not one of its buttons) opens the
+    // default drill for that stage: the ear trainer.
+    const step = e.target.closest('#pathSteps .path-step');
+    if (step && !e.target.closest('button')) {
+      setSetting('earStage', step.dataset.stage);
+      goToTab('ear');
+    }
   });
 }

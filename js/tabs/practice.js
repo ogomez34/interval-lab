@@ -19,13 +19,11 @@ let state = {
   mode: 'nameNote'
 };
 
-let fbState = { current: null, answered: false, correct: 0, total: 0 };
-let revState = { targetPc: null, selected: new Set(), answered: false, correct: 0, total: 0 };
 let twinState = { originMidi: null, targetKeys: new Set(), selected: new Set(), answered: false, correct: 0, total: 0, startMs: 0 };
 let fiState = { rootPc: null, semis: null, selected: new Set(), answered: false, correct: 0, total: 0 };
 let hpState = { rootPc: null, semis: null, rootMidi: 0, targetMidi: 0, selected: new Set(), answered: false, correct: 0, total: 0 };
 
-const FB_MODES = ['findNote', 'findAll', 'octaveTwin', 'findInterval', 'hearPlay'];
+const FB_MODES = ['findInterval', 'hearPlay', 'octaveTwin'];
 
 export function renderPractice() {
   const weakSpotDefault = getSetting('weakSpotMode', false) ? 'checked' : '';
@@ -44,8 +42,6 @@ export function renderPractice() {
           <option value="nameNote" ${sel('nameNote')}>Name the note (from an interval)</option>
           <option value="nameInterval" ${sel('nameInterval')}>Name the interval (from two notes)</option>
           <option value="hearAndName" ${sel('hearAndName')}>Hear a note, name it</option>
-          <option value="findNote" ${sel('findNote')}>Find the note (on the guitar neck)</option>
-          <option value="findAll" ${sel('findAll')}>Find them all (on the guitar neck)</option>
           <option value="findInterval" ${sel('findInterval')}>Find the interval (from a root)</option>
           <option value="hearPlay" ${sel('hearPlay')}>Hear it, play it (on the neck)</option>
           <option value="octaveTwin" ${sel('octaveTwin')}>Find its octave twin (timed)</option>
@@ -108,26 +104,6 @@ export function renderPractice() {
     <div id="fbGameArea" style="display:${isFb ? 'block' : 'none'};">
       <div class="fretboard-wrap">
         <div class="fretboard" id="pfbFretboard"></div>
-      </div>
-
-      <div id="findNoteGame" style="display:${mode === 'findNote' ? 'block' : 'none'};">
-        <p>A fret lights up — can you name the note?</p>
-        <div class="mini-controls">
-          <button class="primary" id="fbNewQ">New question</button>
-          <button class="secondary" id="fbReveal">Reveal</button>
-          <span id="fbStats" style="font-size:13px;color:var(--muted);"></span>
-        </div>
-        <div class="fb-question" id="fbQuestion">Press "New question" to start.</div>
-      </div>
-
-      <div id="findAllGame" style="display:${mode === 'findAll' ? 'block' : 'none'};">
-        <p>We give you a note name — tap every fret on the neck that matches it, then reveal!</p>
-        <div class="mini-controls">
-          <button class="primary" id="revNewQ">New question</button>
-          <button class="secondary" id="revReveal">Reveal</button>
-          <span id="revStats" style="font-size:13px;color:var(--muted);"></span>
-        </div>
-        <div class="fb-question" id="revQuestion">Press "New question" to start.</div>
       </div>
 
       <div id="findIntervalGame" style="display:${mode === 'findInterval' ? 'block' : 'none'};">
@@ -512,10 +488,6 @@ export function initPractice() {
     }
   });
 
-  $('fbNewQ').addEventListener('click', newFretQ);
-  $('fbReveal').addEventListener('click', revealFret);
-  $('revNewQ').addEventListener('click', newRevQ);
-  $('revReveal').addEventListener('click', revealRev);
   $('fiNewQ').addEventListener('click', newFindIntervalQ);
   $('fiReveal').addEventListener('click', revealFindInterval);
   $('hpNewQ').addEventListener('click', newHearPlayQ);
@@ -526,8 +498,7 @@ export function initPractice() {
   $('twinNewQ').addEventListener('click', newTwinQ);
   $('twinReveal').addEventListener('click', revealTwin);
   $('pfbFretboard').addEventListener('click', (e) => {
-    if (state.mode === 'findAll') handleReverseClick(e);
-    else if (state.mode === 'findInterval') handleFindIntervalClick(e);
+    if (state.mode === 'findInterval') handleFindIntervalClick(e);
     else if (state.mode === 'hearPlay') handleHearPlayClick(e);
     else if (state.mode === 'octaveTwin') handleTwinClick(e);
   });
@@ -599,30 +570,22 @@ function applyModeVisibility() {
   $('textModeControls').style.display = isFb ? 'none' : 'contents';
   $('textGameArea').style.display = isFb ? 'none' : 'block';
   $('fbGameArea').style.display = isFb ? 'block' : 'none';
-  $('findNoteGame').style.display = state.mode === 'findNote' ? 'block' : 'none';
-  $('findAllGame').style.display = state.mode === 'findAll' ? 'block' : 'none';
   $('findIntervalGame').style.display = state.mode === 'findInterval' ? 'block' : 'none';
   $('hearPlayGame').style.display = state.mode === 'hearPlay' ? 'block' : 'none';
   $('twinGame').style.display = state.mode === 'octaveTwin' ? 'block' : 'none';
 }
 
-// ---- Fretboard games: note / interval / hear-and-play / octave twins ----
+// ---- Fretboard games: find the interval / hear-and-play / octave twins ----
 
 function ensurePfbFretboard() {
   renderFretboardInto($('pfbFretboard'), { tuning: getCurrentTuning(), noFlash: false });
-  fbState.correct = 0; fbState.total = 0;
-  revState.correct = 0; revState.total = 0;
   fiState.correct = 0; fiState.total = 0;
   hpState.correct = 0; hpState.total = 0;
   twinState.correct = 0; twinState.total = 0;
-  $('fbStats').textContent = '';
-  $('revStats').textContent = '';
   $('fiStats').textContent = '';
   $('hpStats').textContent = '';
   $('twinStats').textContent = '';
-  if (state.mode === 'findNote') newFretQ();
-  else if (state.mode === 'findAll') newRevQ();
-  else if (state.mode === 'findInterval') newFindIntervalQ();
+  if (state.mode === 'findInterval') newFindIntervalQ();
   else if (state.mode === 'hearPlay') newHearPlayQ();
   else newTwinQ();
 }
@@ -630,104 +593,6 @@ function ensurePfbFretboard() {
 function clearQuizTargets() {
   document.querySelectorAll('#pfbFretboard .fb-cell.quiz-target').forEach(c => c.classList.remove('quiz-target'));
 }
-
-function newFretQ() {
-  const tuning = getCurrentTuning();
-  const si = Math.floor(Math.random() * tuning.strings.length);
-  const fr = Math.floor(Math.random() * (PFB_FRETS + 1));
-  const midi = tuning.strings[si].midi + fr;
-  const pc = mod12(midi);
-  fbState.current = { si, fr, midi, pc, answered: false };
-  clearQuizTargets();
-  const cell = document.querySelector(`#pfbFretboard .fb-cell[data-string="${si}"][data-fret="${fr}"]`);
-  if (cell) cell.classList.add('quiz-target');
-
-  const stringLabel = tuning.strings[si].name;
-  $('fbQuestion').innerHTML = `String <b>${stringLabel}</b>, fret <b>${fr}</b>. What note?<br>
-    <input type="text" id="fbAnswer" placeholder="e.g. ${formatNoteForDisplay(9)}, ${formatNoteForDisplay(3)}" autocomplete="off" spellcheck="false" style="margin-top:10px;font-size:16px;text-align:center;">
-    <div id="fbResult" style="margin-top:10px;font-size:15px;"></div>`;
-  document.getElementById('fbAnswer').focus();
-  document.getElementById('fbAnswer').addEventListener('keydown', e => {
-    if (e.key === 'Enter') revealFret();
-  });
-  fbState.answered = false;
-}
-
-function revealFret() {
-  if (!fbState.current || fbState.answered) return;
-  const input = document.getElementById('fbAnswer');
-  const user = input ? normalizeAnswerInput(input.value) : '';
-  const correctName = formatNoteForDisplay(fbState.current.pc);
-  const isCorrect = acceptedNoteAnswers(fbState.current.pc).has(user);
-  fbState.total++;
-  if (isCorrect) fbState.correct++;
-  const res = document.getElementById('fbResult');
-  if (res) {
-    res.innerHTML = isCorrect
-      ? `<span style="color:var(--good)">✓ Correct! ${correctName}</span>`
-      : `<span style="color:var(--bad)">✗ Answer: ${correctName}</span>`;
-  }
-  $('fbStats').textContent = `Score: ${fbState.correct}/${fbState.total}`;
-  playMidi(fbState.current.midi, 1.2, 'guitar');
-  fbState.answered = true;
-}
-
-function newRevQ() {
-  const pc = Math.floor(Math.random() * 12);
-  revState.targetPc = pc;
-  revState.selected = new Set();
-  revState.answered = false;
-  clearQuizTargets();
-  document.querySelectorAll('#pfbFretboard .fb-cell.correct-flash, #pfbFretboard .fb-cell.wrong-flash, #pfbFretboard .fb-cell.quiz-correct').forEach(c => {
-    c.classList.remove('correct-flash', 'wrong-flash', 'quiz-correct');
-  });
-  const name = formatNoteForDisplay(pc);
-  $('revQuestion').innerHTML = `Click every <b>${name}</b> on the fretboard. Then press Reveal.`;
-}
-
-function handleReverseClick(e) {
-  const cell = e.target.closest('.fb-cell');
-  if (!cell) return;
-  if (revState.targetPc === null || revState.answered) return;
-  const pc = parseInt(cell.dataset.pc);
-  if (pc === revState.targetPc) {
-    revState.selected.add(`${cell.dataset.string}-${cell.dataset.fret}`);
-    cell.classList.add('correct-flash', 'quiz-correct');
-  } else {
-    cell.classList.add('wrong-flash');
-    setTimeout(() => cell.classList.remove('wrong-flash'), 400);
-  }
-}
-
-function revealRev() {
-  if (revState.targetPc === null || revState.answered) return;
-  revState.total++;
-  const allCells = document.querySelectorAll('#pfbFretboard .fb-cell');
-  const targets = [];
-  allCells.forEach(c => {
-    if (parseInt(c.dataset.pc) === revState.targetPc) targets.push(c);
-  });
-  const targetKeys = new Set(targets.map(c => `${c.dataset.string}-${c.dataset.fret}`));
-  let correctCount = 0;
-  revState.selected.forEach(k => { if (targetKeys.has(k)) correctCount++; });
-  const perfect = correctCount === targetKeys.size && revState.selected.size === targetKeys.size;
-  if (perfect) revState.correct++;
-
-  allCells.forEach(c => {
-    const key = `${c.dataset.string}-${c.dataset.fret}`;
-    if (targetKeys.has(key)) c.classList.add('correct-flash', 'quiz-correct');
-    else if (revState.selected.has(key)) c.classList.add('wrong-flash');
-  });
-
-  const name = formatNoteForDisplay(revState.targetPc);
-  $('revQuestion').innerHTML = perfect
-    ? `<span style="color:var(--good)">✓ Perfect! All ${targetKeys.size} ${name} positions found.</span>`
-    : `Found ${correctCount}/${targetKeys.size}.`;
-  $('revStats').textContent = `Perfect rounds: ${revState.correct}/${revState.total}`;
-  revState.answered = true;
-}
-
-// ---- Fretboard game: "Find the interval" (from a root) ----
 
 function currentStageSemis() {
   const stage = getSetting('earStage', 'stage1');

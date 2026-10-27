@@ -11,7 +11,7 @@ export function refLink(anchor, label) {
 
 export function renderReference() {
   return `
-    <p class="muted-intro">The whole system in one place, built on <b>the one idea: “1” is home — every note, scale, chord and key is just steps counted from it.</b> Sections <b>1–4</b> are the fretboard method — that's the core. Sections <b>5–9</b> support your playing. Read top to bottom, or jump with the menu.</p>
+    <p class="muted-intro">The whole system in one place, built on <b>the one idea: “1” is home — every note, scale, chord and key is just steps counted from it.</b> Sections <b>1–4</b> are the fretboard method — that's the core. Sections <b>5–8</b> support your playing. Read top to bottom, or jump with the menu.</p>
     <nav class="ref-toc" aria-label="Reference contents">
       <a href="#ref-numbers">1 · The number map</a>
       <a href="#ref-counting">2 · Counting steps</a>
@@ -20,10 +20,8 @@ export function renderReference() {
       <a href="#ref-octaves">5 · Octave numbers</a>
       <a href="#ref-chords">6 · Chords</a>
       <a href="#ref-nashville">7 · Nashville numbers</a>
-      <a href="#ref-rhythm">8 · Rhythm</a>
-      <a href="#ref-circle">9 · Circle of fifths</a>
+      <a href="#ref-circle">8 · Circle of fifths</a>
       <a href="#ref-heatmap">Your interval heatmap</a>
-      <a href="#ref-deeper-topics">Go deeper</a>
     </nav>
 
     <h2 id="ref-numbers">1 · The number map</h2>
@@ -222,36 +220,7 @@ export function renderReference() {
       </div>
     </details>
 
-    <h2 id="ref-rhythm">8 · How long to hold a note</h2>
-    <p>This is just <b>how long</b> to hold each note. Use the <b>⏱️ Metronome</b> tab to hear it and practice staying in time.</p>
-    <details class="ref-deeper">
-      <summary>Note values & time signatures</summary>
-      <div class="ref-deeper-body">
-        <table>
-          <tr><th>Name</th><th>Beats (in 4/4)</th><th>Symbol</th><th>How to count</th></tr>
-          <tr><td>Whole note</td><td>4</td><td>𝅝</td><td>"1 – 2 – 3 – 4"</td></tr>
-          <tr><td>Half note</td><td>2</td><td>𝅗𝅥</td><td>played on 1 and 3</td></tr>
-          <tr><td>Quarter note</td><td>1</td><td>♩</td><td>one per beat</td></tr>
-          <tr><td>Eighth note</td><td>0.5</td><td>♪</td><td>"1 and 2 and…"</td></tr>
-          <tr><td>Sixteenth note</td><td>0.25</td><td>𝅘𝅥𝅯</td><td>"1 e and a…"</td></tr>
-          <tr><td>Triplet</td><td>0.333</td><td>♪₃</td><td>3 in the space of 2</td></tr>
-          <tr><td>Dotted half</td><td>3</td><td>𝅗𝅥.</td><td>half + half-of-half</td></tr>
-          <tr><td>Dotted quarter</td><td>1.5</td><td>♩.</td><td>quarter + eighth</td></tr>
-        </table>
-        <p><b>The dot rule:</b> a dot adds half of the note's value. Dotted quarter = 1 + 0.5 = 1.5 beats.</p>
-        <table>
-          <tr><th>Signature</th><th>Means</th><th>Feel</th></tr>
-          <tr><td>4/4</td><td>4 beats per bar</td><td>The default — rock, pop, most things</td></tr>
-          <tr><td>3/4</td><td>3 beats per bar</td><td>Waltz</td></tr>
-          <tr><td>6/8</td><td>6 eighth notes (2 groups of 3)</td><td>Rolling, jig-like</td></tr>
-          <tr><td>2/4</td><td>2 beats per bar</td><td>March</td></tr>
-          <tr><td>5/4</td><td>5 beats per bar</td><td>Odd time — Take Five</td></tr>
-          <tr><td>7/8</td><td>7 eighth notes per bar</td><td>Odd time — progressive rock</td></tr>
-        </table>
-      </div>
-    </details>
-
-    <h2 id="ref-circle">9 · The Circle of Fifths</h2>
+    <h2 id="ref-circle">8 · The Circle of Fifths</h2>
     <p>Tap a slice to hear it. Each step clockwise is up a 5th; each step back is up a 4th.</p>
 
     <div class="circle-wrap" id="circleWrap"></div>
@@ -277,55 +246,6 @@ export function renderReference() {
       </div>
     </details>
 
-    <details class="ref-deeper" id="ref-deeper-topics">
-      <summary>Go deeper: modes & solfège</summary>
-      <div class="ref-deeper-body">
-        <h2 id="ref-modes">Same notes, different mood: modes</h2>
-        <p>Think of modes like different filters on the same photo — same picture (notes), different vibe.</p>
-        <details class="ref-deeper">
-          <summary>Modes — the full picture</summary>
-          <div class="ref-deeper-body">
-            <p>A mode is a scale built from a different starting note of the same parent scale — same 7 notes, different "home," different feeling.</p>
-            <table>
-              <tr><th>Mode</th><th>Built from</th><th>Character</th><th>Famous example</th></tr>
-              <tr><td><b>Ionian</b></td><td>1st degree of major (same as major)</td><td>Bright, happy, resolved</td><td>Let It Be — The Beatles</td></tr>
-              <tr><td><b>Dorian</b></td><td>2nd degree (minor with raised 6th)</td><td>Minor but hopeful, jazzy, folk</td><td>Scarborough Fair; So What — Miles Davis</td></tr>
-              <tr><td><b>Phrygian</b></td><td>3rd degree (minor with flat 2nd)</td><td>Dark, Spanish, heavy metal</td><td>Wherever I May Roam — Metallica</td></tr>
-              <tr><td><b>Lydian</b></td><td>4th degree (major with raised 4th)</td><td>Dreamy, floaty, cinematic</td><td>The Simpsons theme; Flying Theme — E.T.</td></tr>
-              <tr><td><b>Mixolydian</b></td><td>5th degree (major with flat 7th)</td><td>Bluesy, rock 'n' roll</td><td>Sweet Home Alabama; Norwegian Wood</td></tr>
-              <tr><td><b>Aeolian</b></td><td>6th degree (same as natural minor)</td><td>Sad, serious, melancholic</td><td>Losing My Religion — R.E.M.</td></tr>
-              <tr><td><b>Locrian</b></td><td>7th degree (diminished flavour)</td><td>Unstable, tense, rarely a home</td><td>Army of Me — Björk (riff)</td></tr>
-            </table>
-            <p><b>Try it on the Fretboard tab:</b> root D + scale Dorian = D Dorian. Root A + scale Natural minor = A Aeolian.</p>
-          </div>
-        </details>
-
-        <h2 id="ref-solfege">Do Re Mi… have you heard this before?</h2>
-        <p>That's from "The Sound of Music"! It's just another way of singing our 7-number map.</p>
-        <details class="ref-deeper">
-          <summary>Solfège — fixed vs movable Do</summary>
-          <div class="ref-deeper-body">
-            <h3>Fixed Do</h3>
-            <table>
-              <tr><th>Syllable</th><th>Always means</th></tr>
-              <tr><td>Do</td><td>C</td></tr><tr><td>Re</td><td>D</td></tr><tr><td>Mi</td><td>E</td></tr>
-              <tr><td>Fa</td><td>F</td></tr><tr><td>Sol</td><td>G</td></tr><tr><td>La</td><td>A</td></tr><tr><td>Si</td><td>B</td></tr>
-            </table>
-            <h3>Movable Do</h3>
-            <table>
-              <tr><th>Syllable</th><th>Means</th><th>C major</th><th>G major</th></tr>
-              <tr><td>Do</td><td>1 (home)</td><td>C</td><td>G</td></tr>
-              <tr><td>Re</td><td>2</td><td>D</td><td>A</td></tr>
-              <tr><td>Mi</td><td>3</td><td>E</td><td>B</td></tr>
-              <tr><td>Fa</td><td>4</td><td>F</td><td>C</td></tr>
-              <tr><td>Sol</td><td>5</td><td>G</td><td>D</td></tr>
-              <tr><td>La</td><td>6</td><td>A</td><td>E</td></tr>
-              <tr><td>Ti</td><td>7</td><td>B</td><td>F#</td></tr>
-            </table>
-          </div>
-        </details>
-      </div>
-    </details>
 
     <h2 id="ref-heatmap">Your interval heatmap</h2>
     <p>Every question you answer in Ear or Practice feeds this map. <b>Green = you hear it. Red = it hears you.</b> Get each interval above 80% and the Learn path marks its stage ✓.</p>

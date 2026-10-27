@@ -1,11 +1,9 @@
-import { SCALES, INTERVAL_LABELS, MAJOR_SCALE, TUNINGS, CIRCLE_MAJOR,
-  $, pcName, rootNameToPc, noteNameToPc, randomChoice,
+import { SCALES, INTERVAL_LABELS, MAJOR_SCALE, TUNINGS,
+  $, rootNameToPc, noteNameToPc,
   octaveShiftPairs, mod12, formatNoteName, intervalQShort, intervalDetail } from '../music.js';
-import { playMidi, playChord, startDrone, stopDrone, dronePlaying } from '../audio.js';
-import { getBpm } from './metro.js';
+import { playMidi, startDrone, stopDrone, dronePlaying } from '../audio.js';
 import { info, infoEntry, updateInfo } from '../infobox.js';
 import { renderChords, initChords } from './chords.js';
-import { renderCircleOfFifths } from '../circle.js';
 import { refreshTuningTricks } from './learn.js';
 import { on, emit } from '../events.js';
 import { getSetting, setSetting, getNoteNames, formatNoteForDisplay } from '../storage.js';
@@ -17,12 +15,6 @@ const LANDMARK_FRETS = [3, 5, 7, 9, 15, 17, 19, 21];
 const OCTAVE_FRETS = [12, 24];
 
 let CURRENT_TUNING = TUNINGS.standardE;
-
-// Scale practice state
-let scalePlayState = {
-  running: false,
-  timeout: null
-};
 
 // Fretboard label mode: "notes" or "intervals"
 let labelModeState = 'notes';
@@ -216,11 +208,6 @@ export function renderGuitar() {
       <span id="legendNormal"><span class="sw root"></span> Root</span>
       <span id="legendScale"><span class="sw scale"></span> In scale</span>
       <span id="legendNormal2"><span class="sw normal"></span> Not in scale</span>
-      <span id="legendShape1"><span class="sw scale"></span> Shape · frets 0–4</span>
-      <span id="legendShapeBoth1"><span class="sw scale-both01"></span> Both · fret 4</span>
-      <span id="legendShape2"><span class="sw scale-pos1"></span> Shape · frets 5–9</span>
-      <span id="legendShapeBoth2"><span class="sw scale-both12"></span> Both · fret 9</span>
-      <span id="legendShape3"><span class="sw scale-pos2"></span> Shape · frets 10–13</span>
     </div>
 
     <div class="fretboard-wrap">
@@ -234,26 +221,6 @@ export function renderGuitar() {
     </div>
     <div class="card interval-shape-card" id="intervalShapes"></div>
 
-    <div class="scale-practice-row">
-      <button class="primary" id="scalePlayBtn">▶ Practice this scale</button>
-      <button class="secondary" id="scaleStopBtn" disabled>Stop</button>
-      <span class="sp-status" id="scaleStatus">Plays the scale up + down at your metronome BPM.</span>
-    </div>
-
-    <h2>🔄 Circle of fifths ${info('The map behind the fretboard', `
-      <p>The fretboard above and this wheel are the <b>same information</b>, arranged differently.</p>
-      <p><b>Clockwise</b> = up a 5th (7 frets). <b>Counterclockwise</b> = up a 4th (5 frets).</p>
-      <p>Your <b>Root</b> is highlighted, with its three best friends: <b>4</b> (one step back), <b>5</b> (one step forward) and the relative minor <b>6–</b> (inner ring).</p>
-      <p>This wheel follows the <b>Notes / Intervals / Nashville</b> switch above. In every view it shows only your key: the 7 in-scale slices stay bright and labelled, the 5 outside dim.</p>
-      <p><b>Notes</b> — letters. <b>Intervals</b> — step numbers (1, 2, 3…). <b>Nashville</b> — scale numbers with <b>2–, 3–, 6–</b> on the inner ring.</p>
-      <p>The coloured rings always mark <b>1, 4, 5</b> and <b>6–</b>.</p>
-      <p>Tap any slice to change the Root and watch the fretboard relabel itself.</p>
-      <p>Works in <b>every tuning</b> — tuning only moves where notes sit on the neck; the wheel never changes.</p>
-    `)}</h2>
-    <p>Same map as the fretboard, rolled into a wheel. The highlighted slices are the chords you'll meet in almost every song. Tap a slice to change key.</p>
-    <div class="circle-wrap"><div id="guitarCircle"></div></div>
-    <div id="guitarCircleSummary" class="card"></div>
-
     <h2>🔁 Octave twins ${info('The one-note shortcut', `
       <p>Learn the notes on just your <b>two lowest strings</b> (6th and 5th). From any note there, jump <b>2 strings up</b> and add the frets written on the gold lines — it's the same note, every time.</p>
       <p>Usually that's <b>+2 frets</b>; crossing the <b>G→B</b> strings adds one more. Change the <b>Tuning</b> in Settings and the numbers on the lines update to match.</p>
@@ -265,29 +232,7 @@ export function renderGuitar() {
 
     ${renderChords()}
 
-    <p style="color:var(--muted);font-size:14px;">Want to test yourself? The fretboard note-finding games moved to <b>🎯 Practice</b>.</p>
-
-    <h2>🗺️ The CAGED system ${info('What is CAGED?', `
-      <p>You already know 5 open chord shapes: <b>C, A, G, E, D</b>. The CAGED idea is simple: each of those shapes can be picked up (turned into a barre) and slid anywhere on the neck to make the <i>same</i> chord quality on a different root note.</p>
-      <p>Line up all 5 shapes for one root note and they chain together, overlapping, all the way up the neck — meaning you already have 5 different ways to play any major chord, using shapes you probably know already.</p>
-    `)}</h2>
-    <p>The 5 shapes appear in neck order, lowest fret first, for the <b>Root</b> you picked above. CAGED comes from standard tuning (E A D G B E), so this section always uses that tuning.</p>
-    <div class="shape-grid" id="cagedShapes"></div>
-
-    <h2>Quick distance guide ${info('Why these fret counts?', `
-      <p>These are the exact number of frets to move for each interval — handy for finding harmonies fast. They assume standard tuning.</p>
-    `)}</h2>
-    <p style="color:var(--muted);font-size:13px;">Fret counts are for standard tuning.</p>
-    <table>
-      <tr><th>Interval</th><th>Frets up</th><th>Shape</th></tr>
-      <tr><td>Minor 2nd</td><td>1</td><td>Adjacent</td></tr>
-      <tr><td>Major 2nd</td><td>2</td><td>2 frets</td></tr>
-      <tr><td>Minor 3rd</td><td>3</td><td>3 frets</td></tr>
-      <tr><td>Major 3rd</td><td>4</td><td>4 frets</td></tr>
-      <tr><td>Perfect 4th</td><td>5</td><td>Same fret, next string</td></tr>
-      <tr><td>Perfect 5th</td><td>7</td><td>Power chord</td></tr>
-      <tr><td>Octave</td><td>12</td><td>2 strings, 2 frets</td></tr>
-    </table>
+    <p style="color:var(--muted);font-size:14px;">Want to test yourself? The interval games live in <b>🎯 Practice</b>.</p>
   `;
 }
 
@@ -322,15 +267,10 @@ export function initGuitar() {
     }
   });
 
-  // Scale practice
-  $('scalePlayBtn').addEventListener('click', startScalePractice);
-  $('scaleStopBtn').addEventListener('click', stopScalePractice);
-
-  // Chord finder (merged from the old standalone Chords tab)
+  // Chord finder (shows the selected chord's interval degrees on the neck)
   initChords();
 
   // Cross-module re-render hooks (replaces the old window.__rerender* globals).
-  on('theme-change', renderGuitarCircle);
   on('accidental-pref-change', renderFretboard);
   on('note-names-change', () => {
     updateRootDropdownLabels();
@@ -346,98 +286,6 @@ export function initGuitar() {
 
   updateRootDropdownLabels();
   setTuning(getSetting('tuning', 'standardE'));
-}
-
-// ---- Scale practice ----
-
-function collectScaleNotes(rootPc, scale, tuning) {
-  const scaleSet = new Set(scale.map(s => mod12(rootPc + s)));
-  const notes = []; // {midi, pc, string, fret}
-  // Prefer low strings first, low frets first — most natural scale run.
-  // Find lowest-pitched instance, then walk up.
-  const all = [];
-  tuning.strings.forEach((s, si) => {
-    for (let f = 0; f <= FRETS; f++) {
-      const midi = s.midi + f;
-      const pc = mod12(midi);
-      if (scaleSet.has(pc)) all.push({ midi, pc, string: si, fret: f });
-    }
-  });
-  all.sort((a, b) => a.midi - b.midi);
-
-  // Build an ascending run: start from the lowest root, go up one octave
-  const rootMidiLow = all.find(n => n.pc === rootPc)?.midi;
-  if (rootMidiLow === undefined) return [];
-  const endMidi = rootMidiLow + 12;
-  const run = all.filter(n => n.midi >= rootMidiLow && n.midi <= endMidi);
-
-  // De-dupe by midi (pick first occurrence)
-  const seen = new Set();
-  const dedup = [];
-  for (const n of run) {
-    if (seen.has(n.midi)) continue;
-    seen.add(n.midi);
-    dedup.push(n);
-  }
-  return dedup;
-}
-
-function startScalePractice() {
-  stopScalePractice(); // clean slate
-
-  const rootName = $('rootNote').value;
-  const rootPc = rootNameToPc(rootName);
-  const scale = SCALES[$('scaleType').value];
-  if (!scale) {
-    $('scaleStatus').textContent = 'Pick a scale to practice.';
-    return;
-  }
-  const notes = collectScaleNotes(rootPc, scale, CURRENT_TUNING);
-  if (notes.length === 0) {
-    $('scaleStatus').textContent = 'No notes found for this scale in this tuning.';
-    return;
-  }
-
-  const bpm = getBpm();
-  const intervalMs = 60000 / bpm;
-
-  scalePlayState.running = true;
-  $('scalePlayBtn').disabled = true;
-  $('scaleStopBtn').disabled = false;
-  $('scaleStatus').textContent = `Playing ${notes.length} notes at ${bpm} BPM…`;
-
-  // Build sequence: up + down, looping.
-  const seq = [...notes, ...notes.slice(1, -1).reverse()];
-  let i = 0;
-
-  const step = () => {
-    if (!scalePlayState.running) return;
-
-    // Clear previous highlight
-    document.querySelectorAll('.fb-cell.scale-playing').forEach(c => c.classList.remove('scale-playing'));
-
-    const note = seq[i];
-    playMidi(note.midi, intervalMs / 1000 * 0.9, 'guitar');
-
-    // Highlight the matching cell
-    const cell = document.querySelector(`#fretboard .fb-cell[data-midi="${note.midi}"]`);
-    if (cell) cell.classList.add('scale-playing');
-
-    i = (i + 1) % seq.length;
-    scalePlayState.timeout = setTimeout(step, intervalMs);
-  };
-
-  step();
-}
-
-function stopScalePractice() {
-  scalePlayState.running = false;
-  if (scalePlayState.timeout) clearTimeout(scalePlayState.timeout);
-  scalePlayState.timeout = null;
-  document.querySelectorAll('.fb-cell.scale-playing').forEach(c => c.classList.remove('scale-playing'));
-  $('scalePlayBtn').disabled = false;
-  $('scaleStopBtn').disabled = true;
-  $('scaleStatus').textContent = 'Plays the scale up + down at your metronome BPM.';
 }
 
 // ---- Fretboard ----
@@ -463,7 +311,6 @@ export function setTuning(key) {
     `);
   }
   renderFretboard();
-  stopScalePractice();
   // Learn tab's bag of tricks has a tuning-aware row — keep it in sync.
   refreshTuningTricks();
   // Practice fretboard games follow the selected tuning too.
@@ -493,100 +340,11 @@ function renderFretboard() {
     dualMode,
     octaveTwinMode: false,
     noFlash: false,
-    tuning: CURRENT_TUNING,
-    positionShapes: true
+    tuning: CURRENT_TUNING
   });
 
   renderIntervalShapes();
   renderOctaveTwinBoard();
-  renderCagedShapes();
-  renderGuitarCircle();
-}
-
-// ---- Circle of fifths (the same wheel as Reference, linked to the Root) ----
-
-function renderGuitarCircle() {
-  const container = $('guitarCircle');
-  if (!container) return;
-
-  const rootName = $('rootNote').value;
-  const rootPc = noteNameToPc(rootName);
-  const mode = currentLabelMode();
-  const centerBottom = mode === 'nashville' ? 'Nashville view'
-    : mode === 'intervals' ? 'Interval view'
-    : 'Notes view';
-
-  renderCircleOfFifths(container, {
-    highlight: { rootPc, dimOthers: true },
-    labelMode: mode,
-    centerTop: mode === 'notes' ? formatNoteForDisplay(rootPc) : '1',
-    centerBottom,
-    onSliceClick: (idx) => {
-      const majorName = CIRCLE_MAJOR[idx];
-      const majorPc = noteNameToPc(majorName);
-      // The Root dropdown uses sharp spellings only, so map Db → C#, etc.
-      $('rootNote').value = pcName(majorPc);
-      $('rootNote').dispatchEvent(new Event('change'));
-      // Like the Reference circle: play the key's chord, then walk up its scale.
-      playChord([majorPc + 60, majorPc + 64, majorPc + 67], 1.2);
-      setTimeout(() => {
-        MAJOR_SCALE.forEach((iv, i) => {
-          setTimeout(() => playMidi(majorPc + 60 + iv, 0.3), i * 220);
-        });
-      }, 1200);
-    }
-  });
-
-  renderGuitarCircleSummary(rootPc);
-}
-
-function renderGuitarCircleSummary(rootPc) {
-  const el = $('guitarCircleSummary');
-  if (!el) return;
-
-  const rootName = formatNoteForDisplay(rootPc);
-  const ivName = formatNoteForDisplay(mod12(rootPc + 5));
-  const vName = formatNoteForDisplay(mod12(rootPc + 7));
-  const viName = formatNoteForDisplay(mod12(rootPc + 9)) + 'm';
-  const mode = currentLabelMode();
-
-  const modeLine = mode === 'intervals'
-    ? `Steps from root: <b>1</b> (0) · <b>4</b> (5 frets) · <b>5</b> (7 frets) · <b>6</b> (9 frets)`
-    : mode === 'nashville'
-      ? `Chord numbers: <b>1</b> · <b>4</b> · <b>5</b> · <b>6–</b> — the dash means a minor chord`
-      : `Letters: <b>${rootName}</b> · <b>${ivName}</b> · <b>${vName}</b> · <b>${viName}</b>`;
-
-  const dot = (color) => `<span class="sw" style="background:${color};margin:0 4px 0 10px;"></span>`;
-
-  // The 7 chords of the key, with the chord-quality dash/dim notation.
-  const DEG_DEFS = [
-    { deg: '1', iv: 0, dot: 'var(--root)' },
-    { deg: '2–', iv: 2, dot: null },
-    { deg: '3–', iv: 4, dot: null },
-    { deg: '4', iv: 5, dot: 'var(--good)' },
-    { deg: '5', iv: 7, dot: 'var(--accent)' },
-    { deg: '6–', iv: 9, dot: 'var(--nash-cell-border)' },
-    { deg: '7°', iv: 11, dot: null }
-  ];
-  const QUALITY = { 0: '', 2: 'm', 4: 'm', 5: '', 7: '', 9: 'm', 11: 'dim' };
-  const sevenHtml = DEG_DEFS.map(d => {
-    const name = formatNoteForDisplay(mod12(rootPc + d.iv)) + QUALITY[d.iv];
-    return `${d.dot ? dot(d.dot) : ''}<b>${d.deg}</b> ${name}`;
-  }).join('');
-
-  el.innerHTML = `
-    <p style="margin:0 0 8px 0;">${modeLine}</p>
-    <p style="margin:0 0 8px 0;">
-      The 7 chords of <b>${rootName} major</b>:${sevenHtml}
-    </p>
-    <p style="margin:0 0 8px 0;">
-      The pop progression <b>1 – 5 – 6– – 4</b> in ${rootName} is:
-      <b>${rootName} – ${vName} – ${viName} – ${ivName}</b>
-    </p>
-    <p style="margin:0;color:var(--muted);font-size:13px;">
-      Same numbers in every key — the wheel just rotates. Works in every tuning; tuning only moves where the notes sit on the neck.
-    </p>
-  `;
 }
 
 // Dedicated "Octave twins" board: shows one note's octave shape with the
@@ -675,8 +433,7 @@ export function renderFretboardInto(container, opts = {}) {
     nashvilleMode = false,
     dualMode = false,
     highlightPcs = null,
-    tuning = CURRENT_TUNING,
-    positionShapes = false
+    tuning = CURRENT_TUNING
   } = opts;
 
   const scaleSet = new Set(scale.map(s => mod12(rootPc + s)));
@@ -744,14 +501,6 @@ export function renderFretboardInto(container, opts = {}) {
       const isRoot = interval === 0;
       const inScale = scaleSet.has(pc);
       const inChord = highlightPcs && highlightPcs.has(pc);
-      // Scale shapes repeat up the neck — colour them by region. Adjacent
-      // shapes share one fret (4 and 9), which gets a two-colour split.
-      const posClass = !positionShapes ? '' :
-        f < 4 ? '' :
-        f === 4 ? 'both-01' :
-        f < 9 ? 'pos-1' :
-        f === 9 ? 'both-12' :
-        'pos-2';
       if (nashvilleMode) {
         // Nashville: number the notes of the selected scale, 1 is home.
         // It's the scale's own numbers — a minor scale is 1–7, not 1 ♭3 ♭6 ♭7.
@@ -765,7 +514,6 @@ export function renderFretboardInto(container, opts = {}) {
           if (interval === 0) cell.classList.add('root');
           else {
             cell.classList.add('scale');
-            if (posClass) cell.classList.add(posClass);
           }
           cell.textContent = degree;
           cell.title = `${degree} (${formatNoteForDisplay(pc)})`;
@@ -782,7 +530,6 @@ export function renderFretboardInto(container, opts = {}) {
         if (isRoot && !highlightPcs) cell.classList.add('root');
         else if (inScale && !highlightPcs) {
           cell.classList.add('scale');
-          if (posClass) cell.classList.add(posClass);
         }
         if (inChord) cell.classList.add('root');
 
@@ -918,59 +665,6 @@ function drawOctaveLines(container, segments) {
   container.insertBefore(svg, container.firstChild);
 }
 
-// ---- CAGED system ----
-// The 5 classic open-position major chord shapes, in standard tuning
-// (E A D G B E, strings low -> high). Each shape "belongs" to the root note
-// its own letter names (a C shape played open is a C chord). To use the
-// shape for a different root, slide the whole thing up by the semitone gap
-// between the two roots and barre whatever used to be open strings.
-const CAGED_BASE_SHAPES = [
-  { letter: 'C', rootPc: 0, frets: [-1, 3, 2, 0, 1, 0] },
-  { letter: 'A', rootPc: 9, frets: [-1, 0, 2, 2, 2, 0] },
-  { letter: 'G', rootPc: 7, frets: [3, 2, 0, 0, 0, 3] },
-  { letter: 'E', rootPc: 4, frets: [0, 2, 2, 1, 0, 0] },
-  { letter: 'D', rootPc: 2, frets: [-1, -1, 0, 2, 3, 2] }
-];
-
-function cagedShapesForRoot(targetRootPc) {
-  return CAGED_BASE_SHAPES.map(base => {
-    const offset = mod12(targetRootPc - base.rootPc);
-    const frets = base.frets.map(f => f === -1 ? -1 : f + offset);
-    const playedIdx = frets.map((f, i) => f >= 0 ? i : -1).filter(i => i >= 0);
-    const barres = offset > 0 && playedIdx.length > 1
-      ? [{ fret: offset, fromString: playedIdx[0], toString: playedIdx[playedIdx.length - 1] }]
-      : [];
-    const startFret = Math.min(...frets.filter(f => f > 0), offset > 0 ? offset : Infinity);
-    return {
-      name: `${base.letter}-shape`,
-      description: offset === 0
-        ? `Open position — the chord's "home" shape.`
-        : `Same ${base.letter}-shape, barred at fret ${offset}.`,
-      frets, barres,
-      sortFret: Number.isFinite(startFret) ? startFret : 0
-    };
-  }).sort((a, b) => a.sortFret - b.sortFret);
-}
-
-function renderCagedShapes() {
-  const container = $('cagedShapes');
-  if (!container) return;
-  const rootPc = rootNameToPc($('rootNote').value);
-  const rootName = formatNoteForDisplay(rootPc);
-  const shapes = cagedShapesForRoot(rootPc);
-  container.innerHTML = '';
-  shapes.forEach(shape => {
-    const card = document.createElement('div');
-    card.className = 'shape-card';
-    card.innerHTML = `
-      <div class="shape-name">${rootName} — ${shape.name}</div>
-      ${drawShapeSVG(shape)}
-      <div class="shape-desc">${shape.description}</div>
-    `;
-    container.appendChild(card);
-  });
-}
-
 export function drawShapeSVG(shape) {
   // Compute fret range to show
   const fretted = shape.frets.filter(f => f > 0);
@@ -1049,6 +743,3 @@ export function drawShapeSVG(shape) {
   svg += `</svg>`;
   return svg;
 }
-
-// Fretboard note-finding games now live in the Practice tab (js/tabs/practice.js),
-// reusing renderFretboardInto() exported below.
