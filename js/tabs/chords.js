@@ -10,7 +10,7 @@ export function renderChords() {
   return `
     <h2>🎵 Chord library ${info('How the chord library works', `
       <p>Pick a <b>Chord type</b> and <b>Root</b> in the controls at the top.</p>
-      <p>The big fretboard shows <b>every place the chord's notes live</b> on the neck.</p>
+      <p>The big fretboard shows <b>every place the chord's intervals live</b> on the neck — labelled as degrees (R, M3, P5…).</p>
       <p>The <b>shapes</b> below are real fingerings, checked against your <b>Tuning</b> — each card shows finger numbers and how many fingers you need, so you can find a shape that fits your hand.</p>
     `)}</h2>
 
@@ -18,7 +18,7 @@ export function renderChords() {
       <p>Select a chord to see its notes.</p>
     </div>
 
-    <p style="color:var(--muted);font-size:13px;">Every place the notes live (not a fingering):</p>
+    <p style="color:var(--muted);font-size:13px;">Every place the intervals live (not a fingering):</p>
     <div class="fretboard-wrap">
       <div class="fretboard" id="chordFretboard"></div>
     </div>
@@ -75,7 +75,7 @@ function renderChordView() {
     rootPc,
     scale: SCALES.chromatic,
     showAll: false,
-    intervalOverlay: false,
+    dualMode: true, // chords are stacked intervals: R · M3 · P5 …
     highlightPcs: pcs,
     noFlash: false
   });
