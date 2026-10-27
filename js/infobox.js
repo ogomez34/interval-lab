@@ -24,6 +24,21 @@ export function updateInfo(id, title, bodyHtml) {
   if (REGISTRY[id]) REGISTRY[id] = { title, bodyHtml };
 }
 
+// Open the shared popup directly with arbitrary content (no ⓘ button needed).
+// Used by the fretboard so tapping a cell can reveal its note name.
+export function showInfo(title, bodyHtml) {
+  const modal = document.getElementById('infoModal');
+  const titleEl = document.getElementById('infoModalTitle');
+  const bodyEl = document.getElementById('infoModalBody');
+  const closeBtn = document.getElementById('infoModalClose');
+  if (!modal || !titleEl || !bodyEl) return;
+  titleEl.textContent = title;
+  bodyEl.innerHTML = bodyHtml;
+  modal.hidden = false;
+  document.body.classList.add('modal-open');
+  if (closeBtn) closeBtn.focus();
+}
+
 export function initInfoBox() {
   const modal = document.getElementById('infoModal');
   const titleEl = document.getElementById('infoModalTitle');

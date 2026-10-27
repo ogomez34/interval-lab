@@ -31,7 +31,8 @@ The Learn tab teaches the origin of the system, not just the rules:
 - A guided 5-stage path (perfect pillars → colours → steps → wide colours → full chromatic) with ✓ mastery markers driven by your real ear-training accuracy.
 
 ### 🎸 Fretboard
-- The neck as an interval ruler — label modes: **Notes / Intervals / Nashville / Degrees** (scale degree + quality, e.g. `3 M3`).
+- The neck as an interval ruler — labels default to **Intervals** (the whole app teaches distances), with **Notes / Nashville / Degrees** available in Settings.
+- **Tap any fret** to hear it and see its note name + interval details in a popup, whatever the label mode.
 - **Root drone** — hold the root in your ear while you explore.
 - **Interval shape library** — pick any interval and see every practical move (same string, next string, two strings up) in your current tuning.
 - **Octave twins** — the one-note shortcut, with fret-count lines drawn on the neck.

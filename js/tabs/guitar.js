@@ -2,7 +2,7 @@ import { SCALES, INTERVAL_LABELS, MAJOR_SCALE, TUNINGS,
   $, rootNameToPc, noteNameToPc,
   octaveShiftPairs, mod12, formatNoteName, intervalQShort, intervalDetail } from '../music.js';
 import { playMidi, startDrone, stopDrone, dronePlaying } from '../audio.js';
-import { info, infoEntry, updateInfo } from '../infobox.js';
+import { info, infoEntry, updateInfo, showInfo } from '../infobox.js';
 import { renderChords, initChords } from './chords.js';
 import { refreshTuningTricks } from './learn.js';
 import { on, emit } from '../events.js';
@@ -16,8 +16,9 @@ const OCTAVE_FRETS = [12, 24];
 
 let CURRENT_TUNING = TUNINGS.standardE;
 
-// Fretboard label mode: "notes" or "intervals"
-let labelModeState = 'notes';
+// Fretboard label mode: "intervals" is the default — the whole app teaches
+// distances. Notes stay one tap away in the info popup.
+let labelModeState = 'intervals';
 let tuningInfoId = null;
 
 export function currentLabelMode() { return labelModeState; }
@@ -95,14 +96,13 @@ function renderFretboardControls() {
     <div class="settings-row">
       <label>Labels</label>
       <div class="seg-switch" id="labelModeSwitch" role="radiogroup" aria-label="Fretboard labels">
-        <button type="button" data-label-mode="notes" class="active">Notes ${info('Notes — letters', `
+        <button type="button" data-label-mode="notes">Notes ${info('Notes — letters', `
           <p>The fretboard shows each note's <b>letter name</b> — C, D, E…</p>
-          <p>The <b>root</b> is highlighted in its own colour, and the notes of the selected scale are highlighted too.</p>
-          <p>Tick <b>Show every note/interval</b> to label every fret.</p>
+          <p>Tap any fret to see its note name in a popup, whatever the label mode.</p>
         `)}</button>
         <span class="seg-divider" aria-hidden="true"></span>
         <span class="seg-group">
-          <button type="button" data-label-mode="intervals">Intervals ${info('Intervals — all 12 steps', `
+          <button type="button" data-label-mode="intervals" class="active">Intervals ${info('Intervals — all 12 steps', `
             <p>Every note becomes a number: how many steps it is from the root. One fret = one step.</p>
             <p><b>1</b> is home. The full ruler is <b>1 ♭2 2 ♭3 3 4 ♭5 5 ♭6 6 ♭7 7</b> — all 12 steps.</p>
             <p>The selected scale's notes stay highlighted. Tick <b>Show every note/interval</b> to label all 12 frets.</p>
@@ -340,7 +340,8 @@ function renderFretboard() {
     dualMode,
     octaveTwinMode: false,
     noFlash: false,
-    tuning: CURRENT_TUNING
+    tuning: CURRENT_TUNING,
+    cellInfoPopup: true
   });
 
   renderIntervalShapes();
@@ -369,6 +370,7 @@ function renderOctaveTwinBoard() {
     octaveTwinMode: false,
     noFlash: false,
     tuning: CURRENT_TUNING,
+    cellInfoPopup: true,
     onCellClick: (cell, midi, pc) => {
       octaveDisplayPc = pc;
       renderOctaveTwinBoard();
@@ -433,7 +435,8 @@ export function renderFretboardInto(container, opts = {}) {
     nashvilleMode = false,
     dualMode = false,
     highlightPcs = null,
-    tuning = CURRENT_TUNING
+    tuning = CURRENT_TUNING,
+    cellInfoPopup = false
   } = opts;
 
   const scaleSet = new Set(scale.map(s => mod12(rootPc + s)));
@@ -569,6 +572,15 @@ export function renderFretboardInto(container, opts = {}) {
         }
         if (opts.octaveTwinMode) {
           highlightOctaveTwins(container, midi, cell);
+        }
+        if (opts.cellInfoPopup) {
+          const d = intervalDetail(interval);
+          showInfo(formatNoteForDisplay(pc), `
+            <p><b>${formatNoteForDisplay(pc)}</b> — string ${tuning.strings.length - si}, fret ${f}.</p>
+            <p>From the root: <b>${intervalQShort(interval)} · ${d.name}</b> — ${interval} fret${interval === 1 ? '' : 's'} up.</p>
+            <p>${d.quality} — ${d.sound}.${d.song !== '—' ? ` Reference song: <i>${d.song}</i>.` : ''}</p>
+            ${dronePlaying() ? '<p class="muted">Drone is on — compare this note against the root.</p>' : '<p class="muted">Tip: turn on the 🔊 drone, then tap around to hear each interval against the root.</p>'}
+          `);
         }
         if (opts.onCellClick) opts.onCellClick(cell, midi, pc);
       });
