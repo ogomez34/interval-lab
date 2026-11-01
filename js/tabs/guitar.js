@@ -245,10 +245,14 @@ function renderTetrachordBoard() {
       <p style="margin:0 0 6px 0;"><b>${t.name} tetrachord</b> from ${formatNoteForDisplay(rootPc)}: <b>${noteNames.join(' · ')}</b></p>
       <p style="margin:0 0 6px 0;color:var(--muted);font-size:13px;">Steps: <b>${t.steps}</b> · frets ${t.semis.join(' – ')} · spans <b>${t.span}</b>. ${t.feel}.</p>
       <p style="margin:0 0 6px 0;color:var(--muted);font-size:13px;">Guitar trick — where the <b>top note</b> sits on the next string in <b>${CURRENT_TUNING.label}</b>: ${pairOffsets.join(' · ')}. (Same fret only when that pair of strings is a perfect 4th apart.)</p>
-      <p style="margin:0 0 6px 0;color:var(--muted);font-size:13px;"><b>Scale formula:</b> <b>lower tetrachord + whole step + upper tetrachord = scale</b>. Try any combination in the builder below — the standard recipes are:</p>
+      <p style="margin:0 0 6px 0;color:var(--muted);font-size:13px;"><b>Scale formula:</b> <b>lower tetrachord + gap + upper tetrachord = scale</b>. The gap is usually a whole step, but the builder works it out for every pair — try any combination below.</p>
       <table style="margin-top:8px;">
-        <tr><th>Scale</th><th>Lower</th><th>Upper</th><th>Shape</th></tr>
-        ${TETRACHORD_SCALES.map(s => `<tr><td>${s.name}</td><td>${TETRACHORDS[s.lower].name}</td><td>${TETRACHORDS[s.upper].name}</td><td>${s.notes}</td></tr>`).join('')}
+        <tr><th>Scale</th><th>Lower</th><th>Gap</th><th>Upper</th><th>Shape</th></tr>
+        ${TETRACHORD_SCALES.map(s => {
+          const gapLabel = s.gap === 1 ? 'H' : s.gap === 2 ? 'W' : `${s.gap}`;
+          const closeLabel = s.close > 0 ? ` + ${stepName(s.close)} close` : '';
+          return `<tr><td>${s.name}</td><td>${TETRACHORDS[s.lower].name}</td><td>${gapLabel}${closeLabel}</td><td>${TETRACHORDS[s.upper].name}</td><td>${s.notes}</td></tr>`;
+        }).join('')}
       </table>
     `;
   }
@@ -276,7 +280,7 @@ const KNOWN_BUILT_SCALES = [
   { name: 'Mixolydian',                semis: [0,2,4,5,7,9,10,12] },
   { name: 'Lydian',                    semis: [0,2,4,6,7,9,11,12] },
   { name: 'Harmonic minor',            semis: [0,2,3,5,7,8,11,12] },
-  { name: 'Diminished (whole-half)',   semis: [0,1,3,4,6,7,9,10] }
+  { name: 'Diminished (whole-half)',   semis: [0,1,3,4,6,7,9,10,12] }
 ];
 
 function stepName(delta) {
@@ -295,8 +299,32 @@ function renderScaleBuilder() {
   const L = TETRACHORDS[lowerKey];
   const U = TETRACHORDS[upperKey];
   const topL = L.semis[L.semis.length - 1];
-  const start = topL + 2; // whole step between the two tetrachords
+  const topU = U.semis[U.semis.length - 1];
+
+  // The gap is whatever closes the octave: gap = 12 - lower span - upper span.
+  // Two perfect-4th tetrachords → whole step (the usual rule); Lydian's
+  // tritone lower half → half step; the diminished scale also needs a
+  // closing whole step after the upper tetrachord.
+  const recipe = TETRACHORD_SCALES.find(r => r.lower === lowerKey && r.upper === upperKey);
+  let gap, close;
+  if (recipe) {
+    gap = recipe.gap;
+    close = recipe.close || 0;
+  } else {
+    gap = 12 - topL - topU;
+    if (gap < 1 || gap > 2) {
+      gap = 2;
+      close = 12 - (topL + gap + topU);
+      if (close < 0) close = 0;
+    } else {
+      close = 0;
+    }
+  }
+
+  const gapName = gap === 1 ? 'half step' : gap === 2 ? 'whole step' : `${gap} semitones`;
+  const start = topL + gap;
   const semis = L.semis.concat(U.semis.map(s => start + s));
+  if (close > 0) semis.push(12);
   const steps = [];
   for (let i = 0; i < semis.length - 1; i++) steps.push(stepName(semis[i + 1] - semis[i]));
 
@@ -305,8 +333,9 @@ function renderScaleBuilder() {
   const rootPc = currentRootPc();
   const noteNames = semis.map(s => formatNoteForDisplay(mod12(rootPc + s))).join(' · ');
 
+  const closePart = close > 0 ? ` + <b>${stepName(close)}</b> (close the octave)` : '';
   out.innerHTML = `
-    <p style="margin:0 0 6px 0;"><b>${L.name}</b> + <b>whole step</b> + <b>${U.name}</b> = <b>${scaleName}</b> in ${formatNoteForDisplay(rootPc)}</p>
+    <p style="margin:0 0 6px 0;"><b>${L.name}</b> + <b>${gapName}</b> + <b>${U.name}</b>${closePart} = <b>${scaleName}</b> in ${formatNoteForDisplay(rootPc)}</p>
     <p style="margin:0 0 6px 0;">${noteNames}</p>
     <p style="margin:0;color:var(--muted);font-size:13px;">Interval pattern: <b>${steps.join(' ')}</b> — read it like a recipe: start anywhere, move those steps.</p>
   `;

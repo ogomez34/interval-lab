@@ -64,16 +64,22 @@ export const TETRACHORDS = {
   diminished:{ name: 'Diminished', semis: [0,1,3,4], steps: 'H W H',    span: 'a major 3rd (not a perfect 4th)', feel: 'symmetrical, tense — the building block of the diminished scale' }
 };
 
-// Scales as two stacked tetrachords (lower + upper), joined by a whole
-// tone. Two rows (Lydian, Harmonic minor) use the bonus shapes above.
+// Scales as two stacked tetrachords. The GAP between them is whatever it
+// takes to make the top of the upper tetrachord land on the octave:
+//   gap = 12 - lower span - upper span
+// For two perfect-4th tetrachords that's a whole step (the usual rule).
+// Lydian's tritone lower half needs only a half step, and the whole-half
+// diminished scale needs a second whole step AFTER the upper tetrachord
+// to close the octave ("close").
 export const TETRACHORD_SCALES = [
-  { name: 'Major (Ionian)',           lower: 'major',      upper: 'major',      notes: 'C D E F | G A B C' },
-  { name: 'Natural minor (Aeolian)',  lower: 'minor',      upper: 'phrygian',   notes: 'A B C D | E F G A' },
-  { name: 'Dorian',                   lower: 'minor',      upper: 'minor',      notes: 'D E F G | A B C D' },
-  { name: 'Phrygian',                 lower: 'phrygian',   upper: 'phrygian',   notes: 'E F G A | B C D E' },
-  { name: 'Mixolydian',               lower: 'major',      upper: 'minor',      notes: 'G A B C | D E F G' },
-  { name: 'Lydian',                   lower: 'lydian',     upper: 'major',      notes: 'C D E F# | G A B C' },
-  { name: 'Harmonic minor',           lower: 'minor',      upper: 'harmonic',   notes: 'A B C D | E F G# A' }
+  { name: 'Major (Ionian)',           lower: 'major',      upper: 'major',      gap: 2, close: 0, notes: 'C D E F | G A B C' },
+  { name: 'Natural minor (Aeolian)',  lower: 'minor',      upper: 'phrygian',   gap: 2, close: 0, notes: 'A B C D | E F G A' },
+  { name: 'Dorian',                   lower: 'minor',      upper: 'minor',      gap: 2, close: 0, notes: 'D E F G | A B C D' },
+  { name: 'Phrygian',                 lower: 'phrygian',   upper: 'phrygian',   gap: 2, close: 0, notes: 'E F G A | B C D E' },
+  { name: 'Mixolydian',               lower: 'major',      upper: 'minor',      gap: 2, close: 0, notes: 'G A B C | D E F G' },
+  { name: 'Lydian',                   lower: 'lydian',     upper: 'major',      gap: 1, close: 0, notes: 'C D E F♯ | G A B C' },
+  { name: 'Harmonic minor',           lower: 'minor',      upper: 'harmonic',   gap: 2, close: 0, notes: 'A B C D | E F G♯ A' },
+  { name: 'Diminished (whole-half)',  lower: 'diminished', upper: 'diminished', gap: 2, close: 2, notes: 'C D♭ E♭ E | F♯ G A B♭ C' }
 ];
 
 export const LEVELS = {

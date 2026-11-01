@@ -97,7 +97,7 @@ export function renderLearn() {
 
     <section class="theory-block">
       <h3>Tetrachords — the two-piece scale</h3>
-      <p>A <b>tetrachord</b> is four notes spanning a perfect 4th. The ancient Greeks built their whole tuning system from these little ladders, and the modern diatonic scales are still just <b>two tetrachords joined by a whole tone</b>.</p>
+      <p>A <b>tetrachord</b> is four notes spanning a perfect 4th. The ancient Greeks built their whole tuning system from these little ladders, and the modern diatonic scales are still just <b>two tetrachords joined by a gap</b> — a <b>whole step</b> whenever both tetrachords span a perfect 4th.</p>
       <p>The four <b>true</b> tetrachords (W = whole step, H = half step, A2 = augmented 2nd):</p>
       <ul class="theory-list">
         <li><b>Major</b> (W W H) — the bottom half of the major scale</li>
