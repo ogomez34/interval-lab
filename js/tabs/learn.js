@@ -104,7 +104,7 @@ export function renderLearn() {
         <li><b>Minor</b> (W H W) — the bottom half of the natural minor</li>
         <li><b>Phrygian</b> (H W W) — the top half of the natural minor</li>
       </ul>
-      <p>On guitar this is pure gold: the top note of any tetrachord is the <b>same fret on the next string</b> (because adjacent strings are a perfect 4th apart). So scales become two identical little shapes — one on the low string, one on the next. Explore it on the <b>🎸 Fretboard</b> tab under <b>🪜 Tetrachords</b>.</p>
+      <p>On guitar this is pure gold: the top note of any tetrachord sits on the next string — the <b>same fret</b> in standard tuning (perfect-4th string pairs), a fret or two away in other tunings. So scales become two identical little shapes — one on the low string, one on the next. Explore it on the <b>🎸 Fretboard</b> tab under <b>🪜 Tetrachords</b>.</p>
     </section>
 
     <section class="theory-block">

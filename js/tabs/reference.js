@@ -130,7 +130,7 @@ export function renderReference() {
       <tr><td><b>Minor</b></td><td>W H W</td><td>0 – 2 – 3 – 5</td><td>Darker; bottom half of the natural minor</td></tr>
       <tr><td><b>Phrygian</b></td><td>H W W</td><td>0 – 1 – 3 – 5</td><td>Tense, Spanish; top half of the natural minor</td></tr>
     </table>
-    <p><b>The guitar trick:</b> because adjacent strings are tuned a perfect 4th apart, the <b>top note of any tetrachord is the same fret on the next string</b>. Play a tetrachord on one string, then the same shape on the next string a whole tone up — that's a scale. Try it live on the <b>🎸 Fretboard</b> tab under <b>🪜 Tetrachords</b>.</p>
+    <p><b>The guitar trick:</b> the top note of a tetrachord sits on the next string. When that pair of strings is a perfect 4th apart (standard tuning), it's the <b>same fret</b>; in other tunings it moves a fret or two. Try it live on the <b>🎸 Fretboard</b> tab under <b>🪜 Tetrachords</b> — the summary card recalculates the offsets for your tuning.</p>
     <table>
       <tr><th>Scale</th><th>Lower tetrachord</th><th>Upper tetrachord</th><th>Shape</th></tr>
       <tr><td>Major (Ionian)</td><td>Major</td><td>Major</td><td>C D E F | G A B C</td></tr>

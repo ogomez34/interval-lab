@@ -231,10 +231,20 @@ function renderTetrachordBoard() {
   });
 
   if (summary) {
+    const pairOffsets = CURRENT_TUNING.strings.slice(0, -1).map((s, i) => {
+      const next = CURRENT_TUNING.strings[i + 1];
+      const gap = next.midi - s.midi;          // semitones between this pair of strings
+      const offset = 5 - gap;                  // where the tetrachord's top note sits on the next string
+      const offsetText = offset === 0 ? 'same fret'
+        : offset > 0 ? `+${offset} fret${offset === 1 ? '' : 's'}`
+        : `${offset} fret${offset === -1 ? '' : 's'}`;
+      return `<b>${s.name}→${next.name}: ${offsetText}</b>`;
+    });
     summary.innerHTML = `
       <p style="margin:0 0 6px 0;"><b>${t.name} tetrachord</b> from ${formatNoteForDisplay(rootPc)}: <b>${noteNames.join(' · ')}</b></p>
       <p style="margin:0 0 6px 0;color:var(--muted);font-size:13px;">Steps: <b>${t.steps}</b> · frets ${t.semis.join(' – ')} · spans a perfect 4th (5 frets). ${t.feel}.</p>
-      <p style="margin:0;color:var(--muted);font-size:13px;">Guitar trick: the <b>top note is the same fret on the next string</b> — adjacent strings are a perfect 4th apart. Two tetrachords, a whole tone apart, build a scale:</p>
+      <p style="margin:0 0 6px 0;color:var(--muted);font-size:13px;">Guitar trick — where the <b>top note</b> sits on the next string in <b>${CURRENT_TUNING.label}</b>: ${pairOffsets.join(' · ')}. (Same fret only when that pair of strings is a perfect 4th apart.)</p>
+      <p style="margin:0;color:var(--muted);font-size:13px;">Two tetrachords, a whole tone apart, build a scale:</p>
       <table style="margin-top:8px;">
         <tr><th>Scale</th><th>Lower</th><th>Upper</th><th>Shape</th></tr>
         ${TETRACHORD_SCALES.map(s => `<tr><td>${s.name}</td><td>${TETRACHORDS[s.lower].name}</td><td>${TETRACHORDS[s.upper].name}</td><td>${s.notes}</td></tr>`).join('')}
@@ -268,12 +278,12 @@ export function renderGuitar() {
 
     <h2>🪜 Tetrachords ${info('Four notes, one perfect 4th', `
       <p>A <b>tetrachord</b> is four notes spanning a perfect 4th (5 frets). The ancient Greeks tuned their lyres this way, and the diatonic scales are just <b>two tetrachords joined by a whole tone</b>.</p>
-      <p>On guitar, the top note of a tetrachord is the <b>same fret on the next string</b> — because adjacent strings are themselves a perfect 4th apart.</p>
+      <p>On guitar, the top note of a tetrachord sits on the next string — at the <b>same fret</b> when that pair of strings is a perfect 4th apart (standard tuning), and a fret or two away in other tunings. The summary card below the board does the maths for your current tuning.</p>
       <p>Pick a type below and read the intervals on the neck. Two of these, stacked, make the scales you already know.</p>
     `)}</h2>
     <div class="scale-practice-row">
       <label>Tetrachord <select id="tetrachordSel"></select></label>
-      <span class="sp-status">The 4th note = next string, same fret.</span>
+      <span class="sp-status" id="tetrachordStatus">The 4th note = next string; same fret only on perfect-4th pairs.</span>
     </div>
     <div class="fretboard-wrap">
       <div class="fretboard" id="tetrachordBoard"></div>
