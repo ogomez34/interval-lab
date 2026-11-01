@@ -36,6 +36,7 @@ The Learn tab teaches the origin of the system, not just the rules:
 - **Root drone** — hold the root in your ear while you explore.
 - **Interval shape library** — pick any interval and see every practical move (same string, next string, two strings up) in your current tuning.
 - **Octave twins** — the one-note shortcut, with fret-count lines drawn on the neck.
+- **Tetrachords** — the two-piece scale: pick Major/Minor/Phrygian, see the four intervals on the neck, and learn the "top note = same fret, next string" trick.
 - Chord library with **interval degrees** labelled on every shape (`R · M3 · P5`).
 
 ### 👂 Ear

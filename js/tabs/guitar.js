@@ -1,4 +1,4 @@
-import { SCALES, INTERVAL_LABELS, MAJOR_SCALE, TUNINGS,
+import { SCALES, INTERVAL_LABELS, MAJOR_SCALE, TUNINGS, TETRACHORDS, TETRACHORD_SCALES,
   $, rootNameToPc, noteNameToPc,
   octaveShiftPairs, mod12, formatNoteName, intervalQShort, intervalDetail } from '../music.js';
 import { playMidi, startDrone, stopDrone, dronePlaying } from '../audio.js';
@@ -198,6 +198,51 @@ function updateDroneButton() {
   btn.classList.toggle('secondary', dronePlaying());
 }
 
+// ---- Tetrachord explorer ----
+function populateTetrachordSelect() {
+  const sel = $('tetrachordSel');
+  if (!sel || sel.options.length) return;
+  Object.entries(TETRACHORDS).forEach(([key, t]) => {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = `${t.name} · ${t.steps}`;
+    sel.appendChild(opt);
+  });
+}
+
+function renderTetrachordBoard() {
+  const board = $('tetrachordBoard');
+  const summary = $('tetrachordSummary');
+  if (!board) return;
+  populateTetrachordSelect();
+  const key = $('tetrachordSel')?.value || 'major';
+  const t = TETRACHORDS[key];
+  const rootPc = currentRootPc();
+  const noteNames = t.semis.map(s => formatNoteForDisplay(mod12(rootPc + s)));
+
+  renderFretboardInto(board, {
+    rootPc,
+    scale: t.semis,
+    showAll: false,
+    intervalOverlay: true,
+    tuning: CURRENT_TUNING,
+    cellInfoPopup: true,
+    noFlash: false
+  });
+
+  if (summary) {
+    summary.innerHTML = `
+      <p style="margin:0 0 6px 0;"><b>${t.name} tetrachord</b> from ${formatNoteForDisplay(rootPc)}: <b>${noteNames.join(' · ')}</b></p>
+      <p style="margin:0 0 6px 0;color:var(--muted);font-size:13px;">Steps: <b>${t.steps}</b> · frets ${t.semis.join(' – ')} · spans a perfect 4th (5 frets). ${t.feel}.</p>
+      <p style="margin:0;color:var(--muted);font-size:13px;">Guitar trick: the <b>top note is the same fret on the next string</b> — adjacent strings are a perfect 4th apart. Two tetrachords, a whole tone apart, build a scale:</p>
+      <table style="margin-top:8px;">
+        <tr><th>Scale</th><th>Lower</th><th>Upper</th><th>Shape</th></tr>
+        ${TETRACHORD_SCALES.map(s => `<tr><td>${s.name}</td><td>${TETRACHORDS[s.lower].name}</td><td>${TETRACHORDS[s.upper].name}</td><td>${s.notes}</td></tr>`).join('')}
+      </table>
+    `;
+  }
+}
+
 export function renderGuitar() {
   const tuningInfo = infoEntry('Tuning & octave numbers', '');
   tuningInfoId = tuningInfo.id;
@@ -220,6 +265,20 @@ export function renderGuitar() {
       <span class="sp-status" id="droneStatus">Hold the root in your ear while you hunt intervals.</span>
     </div>
     <div class="card interval-shape-card" id="intervalShapes"></div>
+
+    <h2>🪜 Tetrachords ${info('Four notes, one perfect 4th', `
+      <p>A <b>tetrachord</b> is four notes spanning a perfect 4th (5 frets). The ancient Greeks tuned their lyres this way, and the diatonic scales are just <b>two tetrachords joined by a whole tone</b>.</p>
+      <p>On guitar, the top note of a tetrachord is the <b>same fret on the next string</b> — because adjacent strings are themselves a perfect 4th apart.</p>
+      <p>Pick a type below and read the intervals on the neck. Two of these, stacked, make the scales you already know.</p>
+    `)}</h2>
+    <div class="scale-practice-row">
+      <label>Tetrachord <select id="tetrachordSel"></select></label>
+      <span class="sp-status">The 4th note = next string, same fret.</span>
+    </div>
+    <div class="fretboard-wrap">
+      <div class="fretboard" id="tetrachordBoard"></div>
+    </div>
+    <div class="card" id="tetrachordSummary"></div>
 
     <h2>🔁 Octave twins ${info('The one-note shortcut', `
       <p>Learn the notes on just your <b>two lowest strings</b> (6th and 5th). From any note there, jump <b>2 strings up</b> and add the frets written on the gold lines — it's the same note, every time.</p>
@@ -254,8 +313,9 @@ export function initGuitar() {
   });
   $('showAll').addEventListener('change', renderFretboard);
 
-  // Drone + interval shape library
+  // Drone + interval shape library + tetrachords
   $('intervalShapeSel').addEventListener('change', renderIntervalShapes);
+  $('tetrachordSel').addEventListener('change', renderTetrachordBoard);
   $('droneBtn').addEventListener('click', () => {
     toggleDrone(currentRootMidi());
     updateDroneButton();
@@ -345,6 +405,7 @@ function renderFretboard() {
   });
 
   renderIntervalShapes();
+  renderTetrachordBoard();
   renderOctaveTwinBoard();
 }
 

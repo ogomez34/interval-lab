@@ -48,6 +48,26 @@ export const EAR_STAGES = {
   stage5: { label: 'Stage 5 · Full chromatic', semis: [1,2,3,4,5,6,7,8,9,10,11,12] }
 };
 
+// Tetrachords: four notes spanning a perfect 4th (5 semitones). Two
+// tetrachords joined by a whole tone make the diatonic scales. On guitar,
+// the top note of a tetrachord is the SAME FRET on the next string —
+// because adjacent strings are themselves a perfect 4th apart.
+export const TETRACHORDS = {
+  major:    { name: 'Major',     semis: [0,2,4,5], steps: 'W W H',  feel: 'bright, stable — the bottom half of the major scale' },
+  minor:    { name: 'Minor',     semis: [0,2,3,5], steps: 'W H W',  feel: 'darker, smooth — Dorian and the natural minor both use it' },
+  phrygian: { name: 'Phrygian',  semis: [0,1,3,5], steps: 'H W W',  feel: 'tense, Spanish — the top half of the natural minor' }
+};
+
+// Diatonic scales as two stacked tetrachords (lower + upper), joined by a
+// whole tone. Lydian is the exception: its lower half spans a tritone.
+export const TETRACHORD_SCALES = [
+  { name: 'Major (Ionian)',      lower: 'major',    upper: 'major',    notes: 'C D E F | G A B C' },
+  { name: 'Natural minor (Aeolian)', lower: 'minor', upper: 'phrygian', notes: 'A B C D | E F G A' },
+  { name: 'Dorian',              lower: 'minor',    upper: 'minor',    notes: 'D E F G | A B C D' },
+  { name: 'Phrygian',            lower: 'phrygian', upper: 'phrygian', notes: 'E F G A | B C D E' },
+  { name: 'Mixolydian',          lower: 'major',    upper: 'minor',    notes: 'G A B C | D E F G' }
+];
+
 export const LEVELS = {
   1: { directions: [1], semis: [2,3,4] },
   2: { directions: [1,-1], semis: [2,3,4] },

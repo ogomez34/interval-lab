@@ -96,6 +96,18 @@ export function renderLearn() {
     </section>
 
     <section class="theory-block">
+      <h3>Tetrachords — the two-piece scale</h3>
+      <p>A <b>tetrachord</b> is four notes spanning a perfect 4th. The ancient Greeks built their whole tuning system from these little ladders, and the modern diatonic scales are still just <b>two tetrachords joined by a whole tone</b>.</p>
+      <p>The three shapes (W = whole step, H = half step):</p>
+      <ul class="theory-list">
+        <li><b>Major</b> (W W H) — the bottom half of the major scale</li>
+        <li><b>Minor</b> (W H W) — the bottom half of the natural minor</li>
+        <li><b>Phrygian</b> (H W W) — the top half of the natural minor</li>
+      </ul>
+      <p>On guitar this is pure gold: the top note of any tetrachord is the <b>same fret on the next string</b> (because adjacent strings are a perfect 4th apart). So scales become two identical little shapes — one on the low string, one on the next. Explore it on the <b>🎸 Fretboard</b> tab under <b>🪜 Tetrachords</b>.</p>
+    </section>
+
+    <section class="theory-block">
       <h3>Your path</h3>
       <p>Work the stages in order — each unlocks the next family. A stage shows <b>✓</b> when you have answered at least 5 of its questions and sit above 80% accuracy.</p>
       <div class="path-steps" id="pathSteps">${renderPathSteps()}</div>

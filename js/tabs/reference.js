@@ -17,6 +17,7 @@ export function renderReference() {
       <a href="#ref-counting">2 · Counting steps</a>
       <a href="#ref-fret-dots">3 · Fretboard dots</a>
       <a href="#ref-octave-shapes">4 · Octave twins</a>
+      <a href="#ref-tetrachords">Tetrachords</a>
       <a href="#ref-octaves">5 · Octave numbers</a>
       <a href="#ref-chords">6 · Chords</a>
       <a href="#ref-nashville">7 · Nashville numbers</a>
@@ -120,6 +121,25 @@ export function renderReference() {
         <p style="color:var(--muted);font-size:13px;">Drop tunings only retune the lowest string, so only the pairs touching it change — notice the low-string pair collapses to <b>0 frets</b> (same fret, 2 strings up) because dropping a whole step makes that gap exactly an octave already! Open tunings (G, D) reshape almost every pair, since the whole string set is spaced differently.</p>
       </div>
     </details>
+
+    <h2 id="ref-tetrachords">Tetrachords — the two-piece scale</h2>
+    <p>A <b>tetrachord</b> is four notes spanning a perfect 4th. The Greek system (and later the medieval modes) was built from these little ladders, and the modern diatonic scales are still just <b>two tetrachords joined by a whole tone</b>.</p>
+    <table>
+      <tr><th>Tetrachord</th><th>Steps</th><th>Frets from root</th><th>Feels like</th></tr>
+      <tr><td><b>Major</b></td><td>W W H</td><td>0 – 2 – 4 – 5</td><td>Bright; bottom half of the major scale</td></tr>
+      <tr><td><b>Minor</b></td><td>W H W</td><td>0 – 2 – 3 – 5</td><td>Darker; bottom half of the natural minor</td></tr>
+      <tr><td><b>Phrygian</b></td><td>H W W</td><td>0 – 1 – 3 – 5</td><td>Tense, Spanish; top half of the natural minor</td></tr>
+    </table>
+    <p><b>The guitar trick:</b> because adjacent strings are tuned a perfect 4th apart, the <b>top note of any tetrachord is the same fret on the next string</b>. Play a tetrachord on one string, then the same shape on the next string a whole tone up — that's a scale. Try it live on the <b>🎸 Fretboard</b> tab under <b>🪜 Tetrachords</b>.</p>
+    <table>
+      <tr><th>Scale</th><th>Lower tetrachord</th><th>Upper tetrachord</th><th>Shape</th></tr>
+      <tr><td>Major (Ionian)</td><td>Major</td><td>Major</td><td>C D E F | G A B C</td></tr>
+      <tr><td>Natural minor (Aeolian)</td><td>Minor</td><td>Phrygian</td><td>A B C D | E F G A</td></tr>
+      <tr><td>Dorian</td><td>Minor</td><td>Minor</td><td>D E F G | A B C D</td></tr>
+      <tr><td>Phrygian</td><td>Phrygian</td><td>Phrygian</td><td>E F G A | B C D E</td></tr>
+      <tr><td>Mixolydian</td><td>Major</td><td>Minor</td><td>G A B C | D E F G</td></tr>
+    </table>
+    <p class="muted">Lydian is the exception: its lower half (W W W) spans a tritone, not a perfect 4th — so it doesn't split into two standard tetrachords.</p>
 
     <h2 id="ref-octaves">5 · Octave numbers (C2, C3, C4…)</h2>
     <p>Each letter repeats forever, higher and lower. The number just says which copy you mean — like floor numbers in a building.</p>
