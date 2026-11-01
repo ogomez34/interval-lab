@@ -265,6 +265,8 @@
 .shape-svg .fret-line { stroke: var(--muted); stroke-width: 1; }
 .shape-svg .nut-line { stroke: var(--text); stroke-width: 3; }
 .shape-svg .finger-dot { fill: var(--root); stroke: #1a1a1a; stroke-width: 1; }
+.shape-svg .root-dot { fill: var(--root); stroke: #1a1a1a; stroke-width: 1; }
+.shape-svg .scale-dot { fill: var(--scale); stroke: #1a1a1a; stroke-width: 1; }
 .shape-svg .finger-label {
   font-size: 9px;
   font-weight: 700;

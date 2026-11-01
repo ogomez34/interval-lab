@@ -245,13 +245,151 @@ function renderTetrachordBoard() {
       <p style="margin:0 0 6px 0;"><b>${t.name} tetrachord</b> from ${formatNoteForDisplay(rootPc)}: <b>${noteNames.join(' · ')}</b></p>
       <p style="margin:0 0 6px 0;color:var(--muted);font-size:13px;">Steps: <b>${t.steps}</b> · frets ${t.semis.join(' – ')} · spans <b>${t.span}</b>. ${t.feel}.</p>
       <p style="margin:0 0 6px 0;color:var(--muted);font-size:13px;">Guitar trick — where the <b>top note</b> sits on the next string in <b>${CURRENT_TUNING.label}</b>: ${pairOffsets.join(' · ')}. (Same fret only when that pair of strings is a perfect 4th apart.)</p>
-      <p style="margin:0;color:var(--muted);font-size:13px;">Two tetrachords, a whole tone apart, build a scale:</p>
+      <p style="margin:0 0 6px 0;color:var(--muted);font-size:13px;"><b>Scale formula:</b> <b>lower tetrachord + whole step + upper tetrachord = scale</b>. Try any combination in the builder below — the standard recipes are:</p>
       <table style="margin-top:8px;">
         <tr><th>Scale</th><th>Lower</th><th>Upper</th><th>Shape</th></tr>
         ${TETRACHORD_SCALES.map(s => `<tr><td>${s.name}</td><td>${TETRACHORDS[s.lower].name}</td><td>${TETRACHORDS[s.upper].name}</td><td>${s.notes}</td></tr>`).join('')}
       </table>
     `;
   }
+  renderTetrachordShapes();
+  renderScaleBuilder();
+}
+
+// ---- Scale builder: lower tetrachord + W + upper tetrachord ----
+
+function populateTetrachordSelectInto(sel) {
+  if (!sel || sel.options.length) return;
+  Object.entries(TETRACHORDS).forEach(([key, t]) => {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = `${t.name} (${t.steps})`;
+    sel.appendChild(opt);
+  });
+}
+
+const KNOWN_BUILT_SCALES = [
+  { name: 'Major (Ionian)',            semis: [0,2,4,5,7,9,11,12] },
+  { name: 'Natural minor (Aeolian)',   semis: [0,2,3,5,7,8,10,12] },
+  { name: 'Dorian',                    semis: [0,2,3,5,7,9,10,12] },
+  { name: 'Phrygian',                  semis: [0,1,3,5,7,8,10,12] },
+  { name: 'Mixolydian',                semis: [0,2,4,5,7,9,10,12] },
+  { name: 'Lydian',                    semis: [0,2,4,6,7,9,11,12] },
+  { name: 'Harmonic minor',            semis: [0,2,3,5,7,8,11,12] },
+  { name: 'Diminished (whole-half)',   semis: [0,1,3,4,6,7,9,10] }
+];
+
+function stepName(delta) {
+  return delta === 1 ? 'H' : delta === 2 ? 'W' : delta === 3 ? 'A2' : delta === 4 ? 'M3' : `${delta}`;
+}
+
+function renderScaleBuilder() {
+  const out = $('tetrachordFormula');
+  const lowerSel = $('scaleLowerSel');
+  const upperSel = $('scaleUpperSel');
+  if (!out) return;
+  populateTetrachordSelectInto(lowerSel);
+  populateTetrachordSelectInto(upperSel);
+  const lowerKey = lowerSel?.value || 'major';
+  const upperKey = upperSel?.value || 'major';
+  const L = TETRACHORDS[lowerKey];
+  const U = TETRACHORDS[upperKey];
+  const topL = L.semis[L.semis.length - 1];
+  const start = topL + 2; // whole step between the two tetrachords
+  const semis = L.semis.concat(U.semis.map(s => start + s));
+  const steps = [];
+  for (let i = 0; i < semis.length - 1; i++) steps.push(stepName(semis[i + 1] - semis[i]));
+
+  const match = KNOWN_BUILT_SCALES.find(k => k.semis.join(',') === semis.join(','));
+  const scaleName = match ? match.name : 'Your own mode';
+  const rootPc = currentRootPc();
+  const noteNames = semis.map(s => formatNoteForDisplay(mod12(rootPc + s))).join(' · ');
+
+  out.innerHTML = `
+    <p style="margin:0 0 6px 0;"><b>${L.name}</b> + <b>whole step</b> + <b>${U.name}</b> = <b>${scaleName}</b> in ${formatNoteForDisplay(rootPc)}</p>
+    <p style="margin:0 0 6px 0;">${noteNames}</p>
+    <p style="margin:0;color:var(--muted);font-size:13px;">Interval pattern: <b>${steps.join(' ')}</b> — read it like a recipe: start anywhere, move those steps.</p>
+  `;
+}
+
+// ---- Tetrachord guitar shapes (current tuning) ----
+
+function tetrachordShapesFor(tuning, semis) {
+  const shapes = [];
+  // One-string shape on the 5th string (mid neck reference)
+  const ref = Math.min(3, tuning.strings.length - 1);
+  shapes.push({
+    label: `One string (${tuning.strings[ref].name})`,
+    strings: [tuning.strings[ref].name],
+    dots: semis.map((f, i) => ({ s: 0, fret: f, root: i === 0 }))
+  });
+  // Two-string shape: notes 1-2-3 on the lower string, the top note on the next
+  for (let si = 0; si < tuning.strings.length - 1; si++) {
+    const gap = tuning.strings[si + 1].midi - tuning.strings[si].midi;
+    const topFret = semis[semis.length - 1] - gap;
+    const raw = [0, semis[1], semis[2], topFret];
+    const min = Math.min(...raw);
+    const f = raw.map(x => x - min);
+    if (f.every(x => x >= 0 && x <= 12)) {
+      shapes.push({
+        label: `${tuning.strings[si].name} → ${tuning.strings[si + 1].name}`,
+        strings: [tuning.strings[si].name, tuning.strings[si + 1].name],
+        dots: [
+          { s: 0, fret: f[0], root: true },
+          { s: 0, fret: f[1], root: false },
+          { s: 0, fret: f[2], root: false },
+          { s: 1, fret: f[3], root: false }
+        ]
+      });
+    }
+  }
+  return shapes;
+}
+
+function tetrachordShapeSVG(shape) {
+  const nStrings = shape.strings.length;
+  const maxFret = Math.max(...shape.dots.map(d => d.fret));
+  const fretsShown = Math.max(maxFret, 4);
+  const width = nStrings === 1 ? 90 : 140;
+  const height = 120;
+  const padLeft = 20, padRight = 8, padTop = 18, padBottom = 10;
+  const stringSpacing = (width - padLeft - padRight) / Math.max(nStrings - 1, 1);
+  const fretSpacing = (height - padTop - padBottom) / fretsShown;
+
+  let svg = `<svg class="shape-svg" viewBox="0 0 ${width} ${height}">`;
+  for (let s = 0; s < nStrings; s++) {
+    const x = padLeft + s * stringSpacing;
+    svg += `<line class="string-line" x1="${x}" y1="${padTop}" x2="${x}" y2="${padTop + fretsShown * fretSpacing}" />`;
+  }
+  for (let i = 0; i <= fretsShown; i++) {
+    const y = padTop + i * fretSpacing;
+    svg += `<line class="fret-line" x1="${padLeft - 8}" y1="${y}" x2="${width - padRight}" y2="${y}" />`;
+  }
+  shape.dots.forEach((d, i) => {
+    const x = padLeft + d.s * stringSpacing;
+    const y = padTop + (d.fret + 0.5) * fretSpacing;
+    svg += `<circle cx="${x}" cy="${y}" r="7" ${d.root ? 'class="root-dot"' : 'class="scale-dot"'} />`;
+    if (i === 0) svg += `<text class="finger-label" x="${x}" y="${y}">1</text>`;
+  });
+  svg += `</svg>`;
+  return svg;
+}
+
+function renderTetrachordShapes() {
+  const container = $('tetrachordShapes');
+  if (!container) return;
+  const key = $('tetrachordSel')?.value || 'major';
+  const t = TETRACHORDS[key];
+  const shapes = tetrachordShapesFor(CURRENT_TUNING, t.semis);
+  container.innerHTML = shapes.map(shape => `
+    <div class="shape-card">
+      ${tetrachordShapeSVG(shape)}
+      <div class="shape-info">
+        <b>${shape.label}</b>
+        <span class="muted">${shape.dots.map(d => d.fret).join(' – ')} frets</span>
+      </div>
+    </div>
+  `).join('');
 }
 
 export function renderGuitar() {
@@ -291,6 +429,19 @@ export function renderGuitar() {
     </div>
     <div class="card" id="tetrachordSummary"></div>
 
+    <div class="shape-grid" id="tetrachordShapes"></div>
+
+    <div class="card">
+      <h3>Scale builder — two tetrachords, one formula</h3>
+      <p style="color:var(--muted);font-size:13px;">Formula: <b>lower tetrachord + whole step + upper tetrachord = scale</b>. Mix any pair below and read the result.</p>
+      <div class="scale-practice-row">
+        <label>Lower <select id="scaleLowerSel"></select></label>
+        <span class="sp-status">+ whole step +</span>
+        <label>Upper <select id="scaleUpperSel"></select></label>
+      </div>
+      <div id="tetrachordFormula"></div>
+    </div>
+
     <h2>🔁 Octave twins ${info('The one-note shortcut', `
       <p>Learn the notes on just your <b>two lowest strings</b> (6th and 5th). From any note there, jump <b>2 strings up</b> and add the frets written on the gold lines — it's the same note, every time.</p>
       <p>Usually that's <b>+2 frets</b>; crossing the <b>G→B</b> strings adds one more. Change the <b>Tuning</b> in Settings and the numbers on the lines update to match.</p>
@@ -327,6 +478,8 @@ export function initGuitar() {
   // Drone + interval shape library + tetrachords
   $('intervalShapeSel').addEventListener('change', renderIntervalShapes);
   $('tetrachordSel').addEventListener('change', renderTetrachordBoard);
+  $('scaleLowerSel').addEventListener('change', renderScaleBuilder);
+  $('scaleUpperSel').addEventListener('change', renderScaleBuilder);
   $('droneBtn').addEventListener('click', () => {
     toggleDrone(currentRootMidi());
     updateDroneButton();
