@@ -282,11 +282,33 @@
   height: auto;
 }
 #tetrachordShapes {
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: 1fr;
 }
-#tetrachordShapes .shape-card .muted {
-  font-size: 12px;
-  line-height: 1.35;
+#tetrachordShapes .pattern-card {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  text-align: left;
+  padding: 16px;
+}
+#tetrachordShapes .pattern-card > div {
+  flex: 1 1 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+#tetrachordShapes .pattern-card .muted {
+  font-size: 14px;
+  line-height: 1.4;
+}
+#tetrachordShapes .pattern-svg {
+  width: 320px;
+  max-width: 100%;
+  flex: 0 0 auto;
 }
 .shape-svg .finger-label {
   font-size: 9px;

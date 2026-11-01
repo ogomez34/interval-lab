@@ -241,9 +241,15 @@ function renderTetrachordBoard() {
         : `${offset} fret${offset === -1 ? '' : 's'}`;
       return `<b>${s.name}→${next.name}: ${offsetText}</b>`;
     });
+    const gapNameOf = (g) => g === 1 ? 'half step (H)' : g === 2 ? 'whole step (W)' : `${g} semitones`;
+    const recipeLine = (r) => `${TETRACHORDS[r.lower].name} + ${gapNameOf(r.gap)} + ${TETRACHORDS[r.upper].name} = <b>${r.name}</b>`;
+    const asLower = TETRACHORD_SCALES.filter(r => r.lower === key).map(recipeLine).join(' · ') || '—';
+    const asUpper = TETRACHORD_SCALES.filter(r => r.upper === key).map(recipeLine).join(' · ') || '—';
     summary.innerHTML = `
       <p style="margin:0 0 6px 0;"><b>${t.name} tetrachord</b> from ${formatNoteForDisplay(rootPc)}: <b>${noteNames.join(' · ')}</b></p>
       <p style="margin:0 0 6px 0;color:var(--muted);font-size:13px;">Steps: <b>${t.steps}</b> · frets ${t.semis.join(' – ')} · spans <b>${t.span}</b>. ${t.feel}.</p>
+      <p style="margin:0 0 6px 0;font-size:14px;"><b>Builds scales:</b> lower half → ${asLower}</p>
+      <p style="margin:0 0 6px 0;font-size:14px;">Upper half → ${asUpper}</p>
       <p style="margin:0 0 6px 0;color:var(--muted);font-size:13px;">Guitar trick — where the <b>top note</b> sits on the next string in <b>${CURRENT_TUNING.label}</b>: ${pairOffsets.join(' · ')}. (Same fret only when that pair of strings is a perfect 4th apart.)</p>
       <p style="margin:0 0 6px 0;color:var(--muted);font-size:13px;"><b>Scale formula:</b> <b>lower tetrachord + gap + upper tetrachord = scale</b>. The gap is usually a whole step, but the builder works it out for every pair — try any combination below.</p>
       <table style="margin-top:8px;">
@@ -362,13 +368,13 @@ function tetrachordPatternData(tuning, t) {
 }
 
 function patternSVG(dots, nStrings, fretsShown, stringNames) {
-  const width = nStrings === 1 ? 150 : 210;
-  const height = nStrings === 1 ? 64 : 84;
-  const padLeft = nStrings === 1 ? 24 : 30;
-  const padRight = 8, padTop = 14, padBottom = 7;
+  const width = nStrings === 1 ? 200 : 260;
+  const height = nStrings === 1 ? 80 : 100;
+  const padLeft = nStrings === 1 ? 30 : 36;
+  const padRight = 10, padTop = 16, padBottom = 9;
   const stringSpacing = (width - padLeft - padRight) / Math.max(nStrings - 1, 1);
   const fretSpacing = (height - padTop - padBottom) / fretsShown;
-  const r = nStrings === 1 ? 4.5 : 5.5;
+  const r = nStrings === 1 ? 5 : 6;
 
   let svg = `<svg class="shape-svg pattern-svg" viewBox="0 0 ${width} ${height}">`;
   for (let s = 0; s < nStrings; s++) {
@@ -409,17 +415,21 @@ function renderTetrachordShapes() {
   const nextName = CURRENT_TUNING.strings[1].name;
 
   container.innerHTML = `
-    <div class="shape-card">
-      <b>One-string ladder</b>
+    <div class="shape-card pattern-card">
+      <div>
+        <b>One-string ladder</b>
+        <span class="muted">Frets <b>${t.semis.join(' – ')}</b> on one string — learn this line first.</span>
+      </div>
       ${patternSVG(oneStringDots, 1, fretsShown, [lowName])}
-      <span class="muted">Frets <b>${t.semis.join(' – ')}</b> on one string — learn this line first.</span>
     </div>
-    <div class="shape-card">
-      <b>The box — two lowest strings</b>
+    <div class="shape-card pattern-card">
+      <div>
+        <b>The box — two lowest strings</b>
+        <span class="muted">${topOnNext >= 0
+          ? `Top note (● accent): ${topOnNext === 0 ? '<b>same fret</b> on the next string' : `<b>+${topOnNext} fret${topOnNext === 1 ? '' : 's'}</b> on the next string`}. Slide the box anywhere.`
+          : `In this tuning the top note stays on the starting string.`}</span>
+      </div>
       ${patternSVG(dots, 2, fretsShown, [lowName, nextName])}
-      <span class="muted">${topOnNext >= 0
-        ? `Top note (● accent): ${topOnNext === 0 ? '<b>same fret</b> on the next string' : `<b>+${topOnNext} fret${topOnNext === 1 ? '' : 's'}</b> on the next string`}. Slide the box anywhere.`
-        : `In this tuning the top note stays on the starting string.`}</span>
     </div>
   `;
 }
