@@ -52,20 +52,28 @@ export const EAR_STAGES = {
 // tetrachords joined by a whole tone make the diatonic scales. On guitar,
 // the top note of a tetrachord is the SAME FRET on the next string —
 // because adjacent strings are themselves a perfect 4th apart.
+// The four TRUE tetrachords span a perfect 4th (5 semitones). The two
+// "bonus" shapes are common in guitar/jazz teaching but span other
+// distances — still useful, just not strict tetrachords.
 export const TETRACHORDS = {
-  major:    { name: 'Major',     semis: [0,2,4,5], steps: 'W W H',  feel: 'bright, stable — the bottom half of the major scale' },
-  minor:    { name: 'Minor',     semis: [0,2,3,5], steps: 'W H W',  feel: 'darker, smooth — Dorian and the natural minor both use it' },
-  phrygian: { name: 'Phrygian',  semis: [0,1,3,5], steps: 'H W W',  feel: 'tense, Spanish — the top half of the natural minor' }
+  major:     { name: 'Major',      semis: [0,2,4,5], steps: 'W W H',    span: 'a perfect 4th',   feel: 'bright, stable — the bottom half of the major scale' },
+  minor:     { name: 'Minor',      semis: [0,2,3,5], steps: 'W H W',    span: 'a perfect 4th',   feel: 'darker, smooth — Dorian and the natural minor both use it' },
+  phrygian:  { name: 'Phrygian',   semis: [0,1,3,5], steps: 'H W W',    span: 'a perfect 4th',   feel: 'tense, Spanish — the top half of the natural minor' },
+  harmonic:  { name: 'Harmonic',   semis: [0,1,4,5], steps: 'H A2 H',   span: 'a perfect 4th',   feel: 'exotic, Middle-Eastern — the top half of harmonic minor' },
+  lydian:    { name: 'Lydian',     semis: [0,2,4,6], steps: 'W W W',    span: 'a tritone (not a perfect 4th)', feel: 'bright, floating — the bottom half of the Lydian scale' },
+  diminished:{ name: 'Diminished', semis: [0,1,3,4], steps: 'H W H',    span: 'a major 3rd (not a perfect 4th)', feel: 'symmetrical, tense — the building block of the diminished scale' }
 };
 
-// Diatonic scales as two stacked tetrachords (lower + upper), joined by a
-// whole tone. Lydian is the exception: its lower half spans a tritone.
+// Scales as two stacked tetrachords (lower + upper), joined by a whole
+// tone. Two rows (Lydian, Harmonic minor) use the bonus shapes above.
 export const TETRACHORD_SCALES = [
-  { name: 'Major (Ionian)',      lower: 'major',    upper: 'major',    notes: 'C D E F | G A B C' },
-  { name: 'Natural minor (Aeolian)', lower: 'minor', upper: 'phrygian', notes: 'A B C D | E F G A' },
-  { name: 'Dorian',              lower: 'minor',    upper: 'minor',    notes: 'D E F G | A B C D' },
-  { name: 'Phrygian',            lower: 'phrygian', upper: 'phrygian', notes: 'E F G A | B C D E' },
-  { name: 'Mixolydian',          lower: 'major',    upper: 'minor',    notes: 'G A B C | D E F G' }
+  { name: 'Major (Ionian)',           lower: 'major',      upper: 'major',      notes: 'C D E F | G A B C' },
+  { name: 'Natural minor (Aeolian)',  lower: 'minor',      upper: 'phrygian',   notes: 'A B C D | E F G A' },
+  { name: 'Dorian',                   lower: 'minor',      upper: 'minor',      notes: 'D E F G | A B C D' },
+  { name: 'Phrygian',                 lower: 'phrygian',   upper: 'phrygian',   notes: 'E F G A | B C D E' },
+  { name: 'Mixolydian',               lower: 'major',      upper: 'minor',      notes: 'G A B C | D E F G' },
+  { name: 'Lydian',                   lower: 'lydian',     upper: 'major',      notes: 'C D E F# | G A B C' },
+  { name: 'Harmonic minor',           lower: 'minor',      upper: 'harmonic',   notes: 'A B C D | E F G# A' }
 ];
 
 export const LEVELS = {

@@ -98,11 +98,17 @@ export function renderLearn() {
     <section class="theory-block">
       <h3>Tetrachords — the two-piece scale</h3>
       <p>A <b>tetrachord</b> is four notes spanning a perfect 4th. The ancient Greeks built their whole tuning system from these little ladders, and the modern diatonic scales are still just <b>two tetrachords joined by a whole tone</b>.</p>
-      <p>The three shapes (W = whole step, H = half step):</p>
+      <p>The four <b>true</b> tetrachords (W = whole step, H = half step, A2 = augmented 2nd):</p>
       <ul class="theory-list">
         <li><b>Major</b> (W W H) — the bottom half of the major scale</li>
         <li><b>Minor</b> (W H W) — the bottom half of the natural minor</li>
         <li><b>Phrygian</b> (H W W) — the top half of the natural minor</li>
+        <li><b>Harmonic</b> (H A2 H) — the top half of harmonic minor, that exotic Middle-Eastern leap</li>
+      </ul>
+      <p>Two <b>bonus</b> shapes that don't span a perfect 4th but are guitar/jazz favourites:</p>
+      <ul class="theory-list">
+        <li><b>Lydian</b> (W W W) — spans a tritone; bottom half of the Lydian scale</li>
+        <li><b>Diminished</b> (H W H) — spans a major 3rd; building block of the diminished scale</li>
       </ul>
       <p>On guitar this is pure gold: the top note of any tetrachord sits on the next string — the <b>same fret</b> in standard tuning (perfect-4th string pairs), a fret or two away in other tunings. So scales become two identical little shapes — one on the low string, one on the next. Explore it on the <b>🎸 Fretboard</b> tab under <b>🪜 Tetrachords</b>.</p>
     </section>

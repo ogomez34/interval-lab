@@ -231,10 +231,11 @@ function renderTetrachordBoard() {
   });
 
   if (summary) {
+    const topSemis = t.semis[t.semis.length - 1];
     const pairOffsets = CURRENT_TUNING.strings.slice(0, -1).map((s, i) => {
       const next = CURRENT_TUNING.strings[i + 1];
       const gap = next.midi - s.midi;          // semitones between this pair of strings
-      const offset = 5 - gap;                  // where the tetrachord's top note sits on the next string
+      const offset = topSemis - gap;           // where the tetrachord's top note sits on the next string
       const offsetText = offset === 0 ? 'same fret'
         : offset > 0 ? `+${offset} fret${offset === 1 ? '' : 's'}`
         : `${offset} fret${offset === -1 ? '' : 's'}`;
@@ -242,7 +243,7 @@ function renderTetrachordBoard() {
     });
     summary.innerHTML = `
       <p style="margin:0 0 6px 0;"><b>${t.name} tetrachord</b> from ${formatNoteForDisplay(rootPc)}: <b>${noteNames.join(' · ')}</b></p>
-      <p style="margin:0 0 6px 0;color:var(--muted);font-size:13px;">Steps: <b>${t.steps}</b> · frets ${t.semis.join(' – ')} · spans a perfect 4th (5 frets). ${t.feel}.</p>
+      <p style="margin:0 0 6px 0;color:var(--muted);font-size:13px;">Steps: <b>${t.steps}</b> · frets ${t.semis.join(' – ')} · spans <b>${t.span}</b>. ${t.feel}.</p>
       <p style="margin:0 0 6px 0;color:var(--muted);font-size:13px;">Guitar trick — where the <b>top note</b> sits on the next string in <b>${CURRENT_TUNING.label}</b>: ${pairOffsets.join(' · ')}. (Same fret only when that pair of strings is a perfect 4th apart.)</p>
       <p style="margin:0;color:var(--muted);font-size:13px;">Two tetrachords, a whole tone apart, build a scale:</p>
       <table style="margin-top:8px;">
