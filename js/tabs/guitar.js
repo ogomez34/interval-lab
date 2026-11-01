@@ -304,10 +304,17 @@ function renderScaleBuilder() {
   // The gap is whatever closes the octave: gap = 12 - lower span - upper span.
   // Two perfect-4th tetrachords → whole step (the usual rule); Lydian's
   // tritone lower half → half step; the diminished scale also needs a
-  // closing whole step after the upper tetrachord.
+  // closing whole step after the upper tetrachord. The Gap select can
+  // force whole/half instead of Auto.
+  const gapSel = $('scaleGapSel');
+  const forcedGap = gapSel && gapSel.value !== 'auto' ? parseInt(gapSel.value, 10) : null;
   const recipe = TETRACHORD_SCALES.find(r => r.lower === lowerKey && r.upper === upperKey);
   let gap, close;
-  if (recipe) {
+  if (forcedGap !== null) {
+    gap = forcedGap;
+    close = 12 - (topL + gap + topU);
+    if (close < 0) close = 0;
+  } else if (recipe) {
     gap = recipe.gap;
     close = recipe.close || 0;
   } else {
@@ -322,8 +329,6 @@ function renderScaleBuilder() {
   }
 
   const gapName = gap === 1 ? 'half step' : gap === 2 ? 'whole step' : `${gap} semitones`;
-  const gapLabelEl = $('scaleGapLabel');
-  if (gapLabelEl) gapLabelEl.textContent = close > 0 ? `+ ${gapName} +  (then + ${stepName(close)} to close)` : `+ ${gapName} +`;
   const start = topL + gap;
   const semis = L.semis.concat(U.semis.map(s => start + s));
   if (close > 0) semis.push(12);
@@ -464,10 +469,16 @@ export function renderGuitar() {
 
     <div class="card">
       <h3>Scale builder — two tetrachords, one formula</h3>
-      <p style="color:var(--muted);font-size:13px;">Formula: <b>lower tetrachord + gap + upper tetrachord = scale</b>. The gap is usually a whole step — but watch it change below when you pick Lydian.</p>
+      <p style="color:var(--muted);font-size:13px;">Formula: <b>lower tetrachord + gap + upper tetrachord = scale</b>. Leave the gap on <b>Auto</b> and it works out the correct step for the pair — or force <b>Whole</b> / <b>Half</b> yourself.</p>
       <div class="scale-practice-row">
         <label>Lower <select id="scaleLowerSel"></select></label>
-        <span class="sp-status" id="scaleGapLabel">+ whole step +</span>
+        <label>Gap
+          <select id="scaleGapSel">
+            <option value="auto" selected>Auto</option>
+            <option value="2">Whole step (W)</option>
+            <option value="1">Half step (H)</option>
+          </select>
+        </label>
         <label>Upper <select id="scaleUpperSel"></select></label>
       </div>
       <div id="tetrachordFormula"></div>
@@ -511,6 +522,7 @@ export function initGuitar() {
   $('tetrachordSel').addEventListener('change', renderTetrachordBoard);
   $('scaleLowerSel').addEventListener('change', renderScaleBuilder);
   $('scaleUpperSel').addEventListener('change', renderScaleBuilder);
+  $('scaleGapSel').addEventListener('change', renderScaleBuilder);
   $('droneBtn').addEventListener('click', () => {
     toggleDrone(currentRootMidi());
     updateDroneButton();
