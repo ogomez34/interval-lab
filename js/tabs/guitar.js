@@ -322,6 +322,8 @@ function renderScaleBuilder() {
   }
 
   const gapName = gap === 1 ? 'half step' : gap === 2 ? 'whole step' : `${gap} semitones`;
+  const gapLabelEl = $('scaleGapLabel');
+  if (gapLabelEl) gapLabelEl.textContent = close > 0 ? `+ ${gapName} +  (then + ${stepName(close)} to close)` : `+ ${gapName} +`;
   const start = topL + gap;
   const semis = L.semis.concat(U.semis.map(s => start + s));
   if (close > 0) semis.push(12);
@@ -462,10 +464,10 @@ export function renderGuitar() {
 
     <div class="card">
       <h3>Scale builder — two tetrachords, one formula</h3>
-      <p style="color:var(--muted);font-size:13px;">Formula: <b>lower tetrachord + whole step + upper tetrachord = scale</b>. Mix any pair below and read the result.</p>
+      <p style="color:var(--muted);font-size:13px;">Formula: <b>lower tetrachord + gap + upper tetrachord = scale</b>. The gap is usually a whole step — but watch it change below when you pick Lydian.</p>
       <div class="scale-practice-row">
         <label>Lower <select id="scaleLowerSel"></select></label>
-        <span class="sp-status">+ whole step +</span>
+        <span class="sp-status" id="scaleGapLabel">+ whole step +</span>
         <label>Upper <select id="scaleUpperSel"></select></label>
       </div>
       <div id="tetrachordFormula"></div>
