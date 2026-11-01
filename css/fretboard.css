@@ -276,6 +276,18 @@
 .shape-svg .scale-dot { fill: var(--scale); stroke: #1a1a1a; stroke-width: 1; }
 .shape-svg .top-dot { fill: var(--accent); stroke: #1a1a1a; stroke-width: 1; }
 .shape-svg .string-name { font-size: 10px; font-weight: 700; fill: var(--text); text-anchor: end; dominant-baseline: middle; }
+.shape-svg.pattern-svg {
+  width: 100%;
+  max-width: 240px;
+  height: auto;
+}
+#tetrachordShapes {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+#tetrachordShapes .shape-card .muted {
+  font-size: 12px;
+  line-height: 1.35;
+}
 .shape-svg .finger-label {
   font-size: 9px;
   font-weight: 700;

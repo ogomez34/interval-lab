@@ -362,31 +362,32 @@ function tetrachordPatternData(tuning, t) {
 }
 
 function patternSVG(dots, nStrings, fretsShown, stringNames) {
-  const width = nStrings === 1 ? 130 : 300;
-  const height = 150;
-  const padLeft = nStrings === 1 ? 30 : 40;
-  const padRight = 12, padTop = 24, padBottom = 14;
+  const width = nStrings === 1 ? 150 : 210;
+  const height = nStrings === 1 ? 64 : 84;
+  const padLeft = nStrings === 1 ? 24 : 30;
+  const padRight = 8, padTop = 14, padBottom = 7;
   const stringSpacing = (width - padLeft - padRight) / Math.max(nStrings - 1, 1);
   const fretSpacing = (height - padTop - padBottom) / fretsShown;
+  const r = nStrings === 1 ? 4.5 : 5.5;
 
-  let svg = `<svg class="shape-svg" viewBox="0 0 ${width} ${height}">`;
+  let svg = `<svg class="shape-svg pattern-svg" viewBox="0 0 ${width} ${height}">`;
   for (let s = 0; s < nStrings; s++) {
     const x = padLeft + s * stringSpacing;
     svg += `<line class="string-line" x1="${x}" y1="${padTop}" x2="${x}" y2="${padTop + fretsShown * fretSpacing}" />`;
     if (stringNames && stringNames[s]) {
-      svg += `<text class="string-name" x="${x}" y="${padTop + fretSpacing / 2 + 3}">${stringNames[s]}</text>`;
+      svg += `<text class="string-name" x="${x}" y="${padTop + fretSpacing / 2 + 2}">${stringNames[s]}</text>`;
     }
   }
   for (let i = 0; i <= fretsShown; i++) {
     const y = padTop + i * fretSpacing;
-    svg += `<line class="fret-line" x1="${padLeft - 8}" y1="${y}" x2="${width - padRight}" y2="${y}" />`;
+    svg += `<line class="fret-line" x1="${padLeft - 6}" y1="${y}" x2="${width - padRight}" y2="${y}" />`;
   }
   svg += `<line class="nut-line" x1="${padLeft}" y1="${padTop}" x2="${width - padRight}" y2="${padTop}" />`;
   dots.forEach((d) => {
     if (d.fret < 0 || d.fret > fretsShown) return;
     const x = padLeft + d.s * stringSpacing;
     const y = padTop + (d.fret + 0.5) * fretSpacing;
-    svg += `<circle cx="${x}" cy="${y}" r="7" ${d.root ? 'class="root-dot"' : d.top ? 'class="top-dot"' : 'class="scale-dot"'} />`;
+    svg += `<circle cx="${x}" cy="${y}" r="${r}" ${d.root ? 'class="root-dot"' : d.top ? 'class="top-dot"' : 'class="scale-dot"'} />`;
     if (d.root) svg += `<text class="finger-label" x="${x}" y="${y}">1</text>`;
   });
   svg += `</svg>`;
@@ -408,17 +409,17 @@ function renderTetrachordShapes() {
   const nextName = CURRENT_TUNING.strings[1].name;
 
   container.innerHTML = `
-    <div class="shape-card wide">
-      <b>One-string ladder — the raw pattern</b>
+    <div class="shape-card">
+      <b>One-string ladder</b>
       ${patternSVG(oneStringDots, 1, fretsShown, [lowName])}
-      <span class="muted">Frets <b>${t.semis.join(' – ')}</b> on any single string. That's the whole tetrachord, in a line. Learn this ladder first.</span>
+      <span class="muted">Frets <b>${t.semis.join(' – ')}</b> on one string — learn this line first.</span>
     </div>
-    <div class="shape-card wide">
-      <b>The box — on the two lowest strings</b>
+    <div class="shape-card">
+      <b>The box — two lowest strings</b>
       ${patternSVG(dots, 2, fretsShown, [lowName, nextName])}
       <span class="muted">${topOnNext >= 0
-        ? `The <b>top note</b> (● accent) sits on the next string ${topOnNext === 0 ? 'at the <b>same fret</b>' : `at <b>+${topOnNext} fret${topOnNext === 1 ? '' : 's'}</b>`}. Slide this whole box to any fret on the neck — the shape never changes.`
-        : `In this tuning the top note stays on the starting string; see the offsets in the summary above.`}</span>
+        ? `Top note (● accent): ${topOnNext === 0 ? '<b>same fret</b> on the next string' : `<b>+${topOnNext} fret${topOnNext === 1 ? '' : 's'}</b> on the next string`}. Slide the box anywhere.`
+        : `In this tuning the top note stays on the starting string.`}</span>
     </div>
   `;
 }
