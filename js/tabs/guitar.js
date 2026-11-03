@@ -906,6 +906,10 @@ export function renderFretboardInto(container, opts = {}) {
 
       cell.addEventListener('click', (e) => {
         e.stopPropagation();
+        if (opts.delegateCellClicks) {
+          if (opts.onCellClick) opts.onCellClick(cell, midi, pc);
+          return;
+        }
         playMidi(midi, 1.2, 'guitar');
         if (!opts.noFlash) {
           cell.classList.add('correct-flash');

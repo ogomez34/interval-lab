@@ -1,4 +1,4 @@
-import { LEVELS, INTERVALS, LETTER_TO_SEMI, EAR_STAGES, intervalDetail, $, randomChoice, mod12, formatNoteName } from '../music.js';
+import { LEVELS, INTERVALS, LETTER_TO_SEMI, EAR_STAGES, TETRACHORDS, intervalDetail, $, randomChoice, mod12, formatNoteName } from '../music.js';
 import { playMidi, playSequence } from '../audio.js';
 import {
   loadStats, recordAttempt, resetStats,
@@ -22,8 +22,9 @@ let state = {
 let twinState = { originMidi: null, targetKeys: new Set(), selected: new Set(), answered: false, correct: 0, total: 0, startMs: 0 };
 let fiState = { rootPc: null, semis: null, selected: new Set(), answered: false, correct: 0, total: 0 };
 let hpState = { rootPc: null, semis: null, rootMidi: 0, targetMidi: 0, selected: new Set(), answered: false, correct: 0, total: 0 };
+let tetraState = { string: 0, rootFret: 0, rootPc: null, semis: null, targets: [], step: 0, answered: false, correct: 0, total: 0 };
 
-const FB_MODES = ['findInterval', 'hearPlay', 'octaveTwin'];
+const FB_MODES = ['findInterval', 'hearPlay', 'octaveTwin', 'tetraLadder'];
 
 export function renderPractice() {
   const weakSpotDefault = getSetting('weakSpotMode', false) ? 'checked' : '';
@@ -45,6 +46,7 @@ export function renderPractice() {
           <option value="findInterval" ${sel('findInterval')}>Find the interval (from a root)</option>
           <option value="hearPlay" ${sel('hearPlay')}>Hear it, play it (on the neck)</option>
           <option value="octaveTwin" ${sel('octaveTwin')}>Find its octave twin (timed)</option>
+          <option value="tetraLadder" ${sel('tetraLadder')}>Tetrachord ladder (eye–hand)</option>
         </select>
       </label>
       <div id="textModeControls" style="display:${isFb ? 'none' : 'contents'};">
@@ -125,6 +127,20 @@ export function renderPractice() {
           <span id="hpStats" style="font-size:13px;color:var(--muted);"></span>
         </div>
         <div class="fb-question" id="hpQuestion">Press "New question" to start.</div>
+      </div>
+
+      <div id="tetraGame" style="display:${mode === 'tetraLadder' ? 'block' : 'none'};">
+        <p>Eye–hand drill: the ladder lights up and plays. <b>Tap the four frets in order</b> to play it back — your hand learns the shape, your ear checks the sound. ${info('Why this drill?', `
+          <p>Interiorising a tetrachord means your fingers find it <b>without looking</b>. Hearing it, seeing it light up, then repeating it with your hand is the fastest way there.</p>
+          <p>The game picks a random string, fret and tetrachord type each round. Tap the highlighted ladder in order: 1 → 2 → 3 → 4.</p>
+        `)}</p>
+        <div class="mini-controls">
+          <button class="primary" id="tetraNewQ">New question</button>
+          <button class="play-btn" id="tetraReplay">Replay</button>
+          <button class="secondary" id="tetraReveal">Reveal</button>
+          <span id="tetraStats" style="font-size:13px;color:var(--muted);"></span>
+        </div>
+        <div class="fb-question" id="tetraQuestion">Press "New question" to start.</div>
       </div>
 
       <div id="twinGame" style="display:${mode === 'octaveTwin' ? 'block' : 'none'};">
@@ -495,13 +511,11 @@ export function initPractice() {
     if (hpState.rootMidi) playSequence([hpState.rootMidi, hpState.targetMidi], 0.8, 'guitar');
   });
   $('hpReveal').addEventListener('click', revealHearPlay);
+  $('tetraNewQ').addEventListener('click', newTetraQ);
+  $('tetraReplay').addEventListener('click', playTetraLadder);
+  $('tetraReveal').addEventListener('click', revealTetra);
   $('twinNewQ').addEventListener('click', newTwinQ);
   $('twinReveal').addEventListener('click', revealTwin);
-  $('pfbFretboard').addEventListener('click', (e) => {
-    if (state.mode === 'findInterval') handleFindIntervalClick(e);
-    else if (state.mode === 'hearPlay') handleHearPlayClick(e);
-    else if (state.mode === 'octaveTwin') handleTwinClick(e);
-  });
 
   $('clearStatsBtn').addEventListener('click', () => {
     if (confirm('Clear all practice stats? This cannot be undone.')) {
@@ -572,21 +586,37 @@ function applyModeVisibility() {
   $('fbGameArea').style.display = isFb ? 'block' : 'none';
   $('findIntervalGame').style.display = state.mode === 'findInterval' ? 'block' : 'none';
   $('hearPlayGame').style.display = state.mode === 'hearPlay' ? 'block' : 'none';
+  $('tetraGame').style.display = state.mode === 'tetraLadder' ? 'block' : 'none';
   $('twinGame').style.display = state.mode === 'octaveTwin' ? 'block' : 'none';
 }
 
-// ---- Fretboard games: find the interval / hear-and-play / octave twins ----
+// ---- Fretboard games: find the interval / hear-and-play / octave twins / tetrachord ladder ----
+
+function routeGameClick(cell) {
+  if (state.mode === 'findInterval') handleFindIntervalClick({ target: cell });
+  else if (state.mode === 'hearPlay') handleHearPlayClick({ target: cell });
+  else if (state.mode === 'octaveTwin') handleTwinClick({ target: cell });
+  else if (state.mode === 'tetraLadder') handleTetraClick({ target: cell });
+}
 
 function ensurePfbFretboard() {
-  renderFretboardInto($('pfbFretboard'), { tuning: getCurrentTuning(), noFlash: false });
+  renderFretboardInto($('pfbFretboard'), {
+    tuning: getCurrentTuning(),
+    noFlash: false,
+    delegateCellClicks: true,
+    onCellClick: (cell) => routeGameClick(cell)
+  });
   fiState.correct = 0; fiState.total = 0;
   hpState.correct = 0; hpState.total = 0;
   twinState.correct = 0; twinState.total = 0;
+  tetraState.correct = 0; tetraState.total = 0;
   $('fiStats').textContent = '';
   $('hpStats').textContent = '';
   $('twinStats').textContent = '';
+  $('tetraStats').textContent = '';
   if (state.mode === 'findInterval') newFindIntervalQ();
   else if (state.mode === 'hearPlay') newHearPlayQ();
+  else if (state.mode === 'tetraLadder') newTetraQ();
   else newTwinQ();
 }
 
@@ -728,6 +758,109 @@ function revealHearPlay() {
   $('hpStats').textContent = `Perfect rounds: ${hpState.correct}/${hpState.total}`;
   playSequence([hpState.rootMidi, hpState.targetMidi], 0.8, 'guitar');
   hpState.answered = true;
+}
+
+// ---- Fretboard game: "Tetrachord ladder" (eye–hand) ----
+
+function playTetraLadder() {
+  if (!tetraState.targets || !tetraState.targets.length) return;
+  playSequence(tetraState.targets.map(t => t.midi), 0.45, 'guitar');
+}
+
+function newTetraQ() {
+  const tuning = getCurrentTuning();
+  const strings = tuning.strings;
+  const keys = Object.keys(TETRACHORDS);
+  const key = randomChoice(keys);
+  const t = TETRACHORDS[key];
+  const top = t.semis[t.semis.length - 1];
+  const maxStart = Math.max(0, PFB_FRETS - top);
+  const si = Math.floor(Math.random() * strings.length);
+  const rootFret = Math.floor(Math.random() * (maxStart + 1));
+  const rootMidi = strings[si].midi + rootFret;
+  const rootPc = mod12(rootMidi);
+
+  tetraState.string = si;
+  tetraState.rootFret = rootFret;
+  tetraState.rootPc = rootPc;
+  tetraState.semis = t.semis;
+  tetraState.key = key;
+  tetraState.targets = t.semis.map(s => ({
+    string: si,
+    fret: rootFret + s,
+    midi: rootMidi + s,
+    pc: mod12(rootMidi + s)
+  }));
+  tetraState.step = 0;
+  tetraState.answered = false;
+  tetraState.correct = tetraState.correct ?? 0;
+  tetraState.total = tetraState.total ?? 0;
+
+  // Draw the ladder: mark only the four target cells on the chosen string.
+  renderFretboardInto($('pfbFretboard'), {
+    tuning,
+    rootPc,
+    scale: [0],
+    showAll: false,
+    intervalOverlay: false,
+    noFlash: false,
+    delegateCellClicks: true,
+    onCellClick: (cell) => routeGameClick(cell)
+  });
+  const targetKeys = new Set(tetraState.targets.map(t => `${t.string}-${t.fret}`));
+  document.querySelectorAll('#pfbFretboard .fb-cell').forEach(c => {
+    if (targetKeys.has(`${c.dataset.string}-${c.dataset.fret}`)) c.classList.add('quiz-target');
+  });
+
+  const noteNames = tetraState.targets.map(x => formatNoteForDisplay(x.pc)).join(' · ');
+  $('tetraQuestion').innerHTML = `<b>${t.name} tetrachord</b> on the ${strings[si].name} string, fret ${rootFret}: <b>${noteNames}</b> — tap 1 → 2 → 3 → 4.`;
+  $('tetraStats').textContent = `Ladders: ${tetraState.correct}/${tetraState.total}`;
+  playTetraLadder();
+}
+
+function handleTetraClick(e) {
+  const cell = e.target.closest('.fb-cell');
+  if (!cell || tetraState.answered || !tetraState.targets || !tetraState.targets.length) return;
+  const string = parseInt(cell.dataset.string, 10);
+  const fret = parseInt(cell.dataset.fret, 10);
+  const expected = tetraState.targets[tetraState.step];
+
+  if (string === expected.string && fret === expected.fret) {
+    cell.classList.add('correct-flash');
+    playMidi(expected.midi, 0.7, 'guitar');
+    tetraState.step++;
+    if (tetraState.step >= tetraState.targets.length) {
+      tetraState.answered = true;
+      tetraState.total++;
+      tetraState.correct++;
+      $('tetraQuestion').innerHTML = `✓ Nailed it! ${TETRACHORDS[tetraState.key].name} ladder on the ${getCurrentTuning().strings[tetraState.string].name} string. Next one?`;
+      $('tetraStats').textContent = `Ladders: ${tetraState.correct}/${tetraState.total}`;
+      // Replay the full ladder so the ear hears it again after the hand played it.
+      setTimeout(playTetraLadder, 600);
+    } else {
+      $('tetraQuestion').textContent = `Good — next note (${tetraState.step + 1}/4).`;
+    }
+  } else {
+    cell.classList.add('wrong-flash');
+    setTimeout(() => cell.classList.remove('wrong-flash'), 350);
+  }
+}
+
+function revealTetra() {
+  if (!tetraState.targets || !tetraState.targets.length) return;
+  tetraState.answered = true;
+  tetraState.total++;
+  const name = TETRACHORDS[tetraState.key].name;
+  const cells = document.querySelectorAll('#pfbFretboard .fb-cell');
+  cells.forEach(c => {
+    const key = `${c.dataset.string}-${c.dataset.fret}`;
+    if (tetraState.targets.some(t => `${t.string}-${t.fret}` === key)) {
+      c.classList.add('correct-flash', 'quiz-correct');
+    }
+  });
+  const notes = tetraState.targets.map(t => formatNoteForDisplay(t.pc)).join(' · ');
+  $('tetraQuestion').innerHTML = `<b>${name}</b> ladder: ${notes} — on the ${getCurrentTuning().strings[tetraState.string].name} string, frets ${tetraState.targets.map(t => t.fret).join(' – ')}.`;
+  $('tetraStats').textContent = `Ladders: ${tetraState.correct}/${tetraState.total}`;
 }
 
 // ---- Fretboard game: "Find its octave twin" (timed) ----
