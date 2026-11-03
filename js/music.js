@@ -72,14 +72,14 @@ export const TETRACHORDS = {
 // diminished scale needs a second whole step AFTER the upper tetrachord
 // to close the octave ("close").
 export const TETRACHORD_SCALES = [
-  { name: 'Major (Ionian)',           lower: 'major',      upper: 'major',      gap: 2, close: 0, notes: 'C D E F | G A B C' },
-  { name: 'Natural minor (Aeolian)',  lower: 'minor',      upper: 'phrygian',   gap: 2, close: 0, notes: 'A B C D | E F G A' },
-  { name: 'Dorian',                   lower: 'minor',      upper: 'minor',      gap: 2, close: 0, notes: 'D E F G | A B C D' },
-  { name: 'Phrygian',                 lower: 'phrygian',   upper: 'phrygian',   gap: 2, close: 0, notes: 'E F G A | B C D E' },
-  { name: 'Mixolydian',               lower: 'major',      upper: 'minor',      gap: 2, close: 0, notes: 'G A B C | D E F G' },
-  { name: 'Lydian',                   lower: 'lydian',     upper: 'major',      gap: 1, close: 0, notes: 'C D E F♯ | G A B C' },
-  { name: 'Harmonic minor',           lower: 'minor',      upper: 'harmonic',   gap: 2, close: 0, notes: 'A B C D | E F G♯ A' },
-  { name: 'Diminished (whole-half)',  lower: 'diminished', upper: 'diminished', gap: 2, close: 2, notes: 'C D♭ E♭ E | F♯ G A B♭ C' }
+  { name: 'Major (Ionian)',           lower: 'major',      upper: 'major',      gap: 2, close: 0, chord: 'Cmaj7',      notes: 'C D E F | G A B C' },
+  { name: 'Natural minor (Aeolian)',  lower: 'minor',      upper: 'phrygian',   gap: 2, close: 0, chord: 'Am7',       notes: 'A B C D | E F G A' },
+  { name: 'Dorian',                   lower: 'minor',      upper: 'minor',      gap: 2, close: 0, chord: 'Dm7',       notes: 'D E F G | A B C D' },
+  { name: 'Phrygian',                 lower: 'phrygian',   upper: 'phrygian',   gap: 2, close: 0, chord: 'Em7',       notes: 'E F G A | B C D E' },
+  { name: 'Mixolydian',               lower: 'major',      upper: 'minor',      gap: 2, close: 0, chord: 'G7',        notes: 'G A B C | D E F G' },
+  { name: 'Lydian',                   lower: 'lydian',     upper: 'major',      gap: 1, close: 0, chord: 'Cmaj7',     notes: 'C D E F♯ | G A B C' },
+  { name: 'Harmonic minor',           lower: 'minor',      upper: 'harmonic',   gap: 2, close: 0, chord: 'Am(maj7)',  notes: 'A B C D | E F G♯ A' },
+  { name: 'Diminished (whole-half)',  lower: 'diminished', upper: 'diminished', gap: 2, close: 2, chord: 'C°7',       notes: 'C D♭ E♭ E | F♯ G A B♭ C' }
 ];
 
 export const LEVELS = {

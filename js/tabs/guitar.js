@@ -1,7 +1,7 @@
 import { SCALES, INTERVAL_LABELS, MAJOR_SCALE, TUNINGS, TETRACHORDS, TETRACHORD_SCALES,
   $, rootNameToPc, noteNameToPc,
   octaveShiftPairs, mod12, formatNoteName, intervalQShort, intervalDetail } from '../music.js';
-import { playMidi, startDrone, stopDrone, dronePlaying } from '../audio.js';
+import { playMidi, playSequence, startDrone, stopDrone, dronePlaying } from '../audio.js';
 import { info, infoEntry, updateInfo, showInfo } from '../infobox.js';
 import { renderChords, initChords } from './chords.js';
 import { refreshTuningTricks } from './learn.js';
@@ -20,6 +20,7 @@ let CURRENT_TUNING = TUNINGS.standardE;
 // distances. Notes stay one tap away in the info popup.
 let labelModeState = 'intervals';
 let tuningInfoId = null;
+let lastBuiltSemis = [0,2,4,5,7,9,11,12]; // latest scale from the builder
 
 export function currentLabelMode() { return labelModeState; }
 export function getCurrentTuning() { return CURRENT_TUNING; }
@@ -131,6 +132,21 @@ function renderFretboardControls() {
 // ---- Drone + interval shape library ----
 function currentRootPc() { return rootNameToPc($('rootNote').value); }
 function currentRootMidi() { return 48 + currentRootPc(); } // C3–B3 — audible, guitar-ish range
+
+function playTetrachordUpDown() {
+  const key = $('tetrachordSel')?.value || 'major';
+  const t = TETRACHORDS[key];
+  const rootMidi = currentRootMidi();
+  const midis = t.semis.map(s => rootMidi + s);
+  const down = [...midis].reverse().slice(1);
+  playSequence([...midis, ...down], 0.42, 'guitar');
+}
+
+function playBuiltScale() {
+  const rootMidi = currentRootMidi();
+  const midis = lastBuiltSemis.map(s => rootMidi + s);
+  playSequence(midis, 0.35, 'guitar');
+}
 
 function populateIntervalShapeSelect() {
   const sel = $('intervalShapeSel');
@@ -338,6 +354,7 @@ function renderScaleBuilder() {
   const start = topL + gap;
   const semis = L.semis.concat(U.semis.map(s => start + s));
   if (close > 0) semis.push(12);
+  lastBuiltSemis = semis;
   const steps = [];
   for (let i = 0; i < semis.length - 1; i++) steps.push(stepName(semis[i + 1] - semis[i]));
 
@@ -346,12 +363,35 @@ function renderScaleBuilder() {
   const rootPc = currentRootPc();
   const noteNames = semis.map(s => formatNoteForDisplay(mod12(rootPc + s))).join(' · ');
 
+  // A 7th chord is the 1st + 3rd note of each tetrachord: C E + G B = Cmaj7.
+  let chordLine = '';
+  if (recipe && recipe.chord) {
+    chordLine = `<p style="margin:0 0 6px 0;"><b>Chord inside</b> (1st + 3rd note of each half): <b>${recipe.chord}</b></p>`;
+  } else if (semis.length >= 7) {
+    const chordNotes = [semis[0], semis[2], semis[4], semis[6]]
+      .map(s => formatNoteForDisplay(mod12(rootPc + s))).join(' · ');
+    chordLine = `<p style="margin:0 0 6px 0;"><b>Chord inside</b> (1st + 3rd note of each half): ${chordNotes}</p>`;
+  }
+
   const closePart = close > 0 ? ` + <b>${stepName(close)}</b> (close the octave)` : '';
   out.innerHTML = `
     <p style="margin:0 0 6px 0;"><b>${L.name}</b> + <b>${gapName}</b> + <b>${U.name}</b>${closePart} = <b>${scaleName}</b> in ${formatNoteForDisplay(rootPc)}</p>
     <p style="margin:0 0 6px 0;">${noteNames}</p>
-    <p style="margin:0;color:var(--muted);font-size:13px;">Interval pattern: <b>${steps.join(' ')}</b> — read it like a recipe: start anywhere, move those steps.</p>
+    <p style="margin:0 0 6px 0;color:var(--muted);font-size:13px;">Interval pattern: <b>${steps.join(' ')}</b> — read it like a recipe: start anywhere, move those steps.</p>
+    ${chordLine}
   `;
+
+  const builtBoard = $('builtScaleBoard');
+  if (builtBoard) {
+    renderFretboardInto(builtBoard, {
+      rootPc,
+      scale: semis,
+      showAll: false,
+      intervalOverlay: true,
+      tuning: CURRENT_TUNING,
+      noFlash: false
+    });
+  }
 }
 
 // ---- Tetrachord guitar shapes (current tuning) ----
@@ -464,6 +504,7 @@ export function renderGuitar() {
     `)}</h2>
     <div class="scale-practice-row">
       <label>Tetrachord <select id="tetrachordSel"></select></label>
+      <button type="button" class="play-btn" id="tetraPlayBtn">▶ Play it</button>
       <span class="sp-status" id="tetrachordStatus">The 4th note = next string; same fret only on perfect-4th pairs.</span>
     </div>
     <div class="fretboard-wrap">
@@ -488,6 +529,13 @@ export function renderGuitar() {
         <label>Upper <select id="scaleUpperSel"></select></label>
       </div>
       <div id="tetrachordFormula"></div>
+      <div class="mini-controls" style="margin-top:10px;">
+        <button type="button" class="play-btn" id="builtScalePlayBtn">▶ Play the scale</button>
+      </div>
+      <div class="fretboard-wrap" style="margin-top:10px;">
+        <div class="fretboard" id="builtScaleBoard"></div>
+      </div>
+      <p style="color:var(--muted);font-size:13px;margin:6px 0 0;">The whole scale on the neck — lower tetrachord + gap + upper tetrachord, all joined up.</p>
     </div>
 
     <h2>🔁 Octave twins ${info('The one-note shortcut', `
@@ -526,9 +574,11 @@ export function initGuitar() {
   // Drone + interval shape library + tetrachords
   $('intervalShapeSel').addEventListener('change', renderIntervalShapes);
   $('tetrachordSel').addEventListener('change', renderTetrachordBoard);
+  $('tetraPlayBtn').addEventListener('click', playTetrachordUpDown);
   $('scaleLowerSel').addEventListener('change', renderScaleBuilder);
   $('scaleUpperSel').addEventListener('change', renderScaleBuilder);
   $('scaleGapSel').addEventListener('change', renderScaleBuilder);
+  $('builtScalePlayBtn').addEventListener('click', playBuiltScale);
   $('droneBtn').addEventListener('click', () => {
     toggleDrone(currentRootMidi());
     updateDroneButton();
