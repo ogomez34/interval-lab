@@ -364,21 +364,37 @@ function renderScaleBuilder() {
   const noteNames = semis.map(s => formatNoteForDisplay(mod12(rootPc + s))).join(' · ');
 
   // A 7th chord is the 1st + 3rd note of each tetrachord: C E + G B = Cmaj7.
-  let chordLine = '';
-  if (recipe && recipe.chord) {
-    chordLine = `<p style="margin:0 0 6px 0;"><b>Chord inside</b> (1st + 3rd note of each half): <b>${recipe.chord}</b></p>`;
-  } else if (semis.length >= 7) {
-    const chordNotes = [semis[0], semis[2], semis[4], semis[6]]
-      .map(s => formatNoteForDisplay(mod12(rootPc + s))).join(' · ');
-    chordLine = `<p style="margin:0 0 6px 0;"><b>Chord inside</b> (1st + 3rd note of each half): ${chordNotes}</p>`;
-  }
+  const lowerNotes = L.semis.map(s => formatNoteForDisplay(mod12(rootPc + s)));
+  const upperNotes = U.semis.map(s => formatNoteForDisplay(mod12(rootPc + start + s)));
+  const chordToneNotes = [lowerNotes[0], lowerNotes[2], upperNotes[0], upperNotes[2]];
+  const chordName = recipe?.chord || 'Custom 7th';
+
+  const chipRow = (notes) => notes.map((n, i) => {
+    const tone = i === 0 || i === 2;
+    return `<span class="tetra-chip ${tone ? 'tone' : 'skip'}" title="${tone ? 'Chord tone — play me' : 'Passing note'}">${n}<small>${i + 1}${tone ? ' · chord' : ''}</small></span>`;
+  }).join('');
+
+  const chordVisual = `
+    <div class="chord-visual">
+      <div class="chord-rows">
+        <div class="chord-row">${chipRow(lowerNotes)}</div>
+        <div class="chord-gap">↓ ${gapName}${close > 0 ? ` + ${stepName(close)} close` : ''}</div>
+        <div class="chord-row">${chipRow(upperNotes)}</div>
+      </div>
+      <div class="chord-result">
+        <div class="chord-equals">= <b>${chordName}</b></div>
+        <div class="muted">${chordToneNotes.join(' · ')}</div>
+      </div>
+    </div>
+    <p style="margin:0 0 6px 0;color:var(--muted);font-size:13px;">The <b>filled</b> chips are the <b>1st + 3rd</b> note of each half. Stack those four and you have the chord — the other notes are the passing tones.</p>
+  `;
 
   const closePart = close > 0 ? ` + <b>${stepName(close)}</b> (close the octave)` : '';
   out.innerHTML = `
     <p style="margin:0 0 6px 0;"><b>${L.name}</b> + <b>${gapName}</b> + <b>${U.name}</b>${closePart} = <b>${scaleName}</b> in ${formatNoteForDisplay(rootPc)}</p>
     <p style="margin:0 0 6px 0;">${noteNames}</p>
     <p style="margin:0 0 6px 0;color:var(--muted);font-size:13px;">Interval pattern: <b>${steps.join(' ')}</b> — read it like a recipe: start anywhere, move those steps.</p>
-    ${chordLine}
+    ${chordVisual}
   `;
 
   const builtBoard = $('builtScaleBoard');
