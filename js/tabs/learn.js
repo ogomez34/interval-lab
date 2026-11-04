@@ -111,6 +111,19 @@ export function renderLearn() {
         <li><b>Diminished</b> (H W H) — spans a major 3rd; building block of the diminished scale</li>
       </ul>
       <p>On guitar this is pure gold: the top note of any tetrachord sits on the next string — the <b>same fret</b> in standard tuning (perfect-4th string pairs), a fret or two away in other tunings. So scales become two identical little shapes — one on the low string, one on the next. Explore it on the <b>🎸 Fretboard</b> tab under <b>🪜 Tetrachords</b>.</p>
+      <details class="ref-deeper">
+        <summary>Where tetrachords come from</summary>
+        <div class="ref-deeper-body">
+          <p><b>“Tetrachord” is Greek for “four strings.”</b> The old lyres were tuned in perfect 4ths, and Greek theorists (starting with Pythagoras) built the whole system from these little ladders.</p>
+          <p>They divided the perfect 4th into three <b>genera</b> (flavours):</p>
+          <ul>
+            <li><b>Diatonic</b> — tone, tone, semitone (our W W H)</li>
+            <li><b>Chromatic</b> — semitone, semitone, minor 3rd</li>
+            <li><b>Enharmonic</b> — quarter-tone, quarter-tone, major 3rd (too small for guitar frets)</li>
+          </ul>
+          <p>To reach the octave they stacked <b>two tetrachords with a whole tone between them</b> — the <i>disjunctive tone</i>. That's exactly the formula in the Scale builder: <b>lower + gap + upper = scale</b>. The medieval church modes kept the same building block and borrowed the Greek names; our modern major/minor system grew out of those modes centuries later. (More on the names in the <b>📚 Reference</b> tab.)</p>
+        </div>
+      </details>
     </section>
 
     <section class="theory-block">

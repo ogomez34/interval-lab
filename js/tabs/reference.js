@@ -148,6 +148,23 @@ export function renderReference() {
       <tr><td>Diminished (whole-half)</td><td>Diminished</td><td>W + W close</td><td>Diminished</td><td>C D♭ E♭ E | F♯ G A B♭ C</td></tr>
     </table>
 
+    <details class="ref-deeper">
+      <summary>Where the names come from</summary>
+      <div class="ref-deeper-body">
+        <p><b>“Tetrachord”</b> is Greek for <b>“four strings”</b> — the four strings of the old lyre, tuned a perfect 4th apart. Greek theorists (from Pythagoras on) divided that perfect 4th into three <b>genera</b>: the <b>diatonic</b> (tone–tone–semitone), the <b>chromatic</b> (semitone–semitone–minor 3rd) and the <b>enharmonic</b> (quarter-tones, too fine for our frets).</p>
+        <p><b>“Diatonic”</b> means “through the tones” — the genus that moves mostly by whole steps. <b>“Chromatic”</b> means “coloured” — the altered, spiced-up genus. <b>“Enharmonic”</b> means “in harmony / agreeing” — notes so close they almost merge.</p>
+        <table>
+          <tr><th>Mode name</th><th>Greek origin</th><th>What it meant at the time</th><th>Today</th></tr>
+          <tr><td><b>Dorian</b></td><td>Doris (central Greece; the Spartans' region)</td><td>Manly, steady, warlike — Plato and Aristotle both praised it</td><td>Minor scale with a raised 6th (D E F G A B C)</td></tr>
+          <tr><td><b>Phrygian</b></td><td>Phrygia (Anatolia, modern Turkey)</td><td>Passionate, ecstatic — the aulos-and-Dionysus mode</td><td>Minor with a flat 2nd (E F G A B C D)</td></tr>
+          <tr><td><b>Lydian</b></td><td>Lydia (also Anatolia)</td><td>Soft, relaxed, intimate — Plato banned it from his school</td><td>Major with a raised 4th (F G A B C D E)</td></tr>
+          <tr><td><b>Mixolydian</b></td><td>“Mixed Lydian” — Lydian with a Dorian twist</td><td>Plaintive, tragic</td><td>Major with a flat 7th (G A B C D E F)</td></tr>
+          <tr><td><b>Ionian / Aeolian</b></td><td>Ionia and Aeolis (Greek regions/tribes)</td><td>Not ancient — added by Glarean in 1547 to complete the mode system</td><td>Our plain major and natural minor</td></tr>
+        </table>
+        <p><b>The honest caveat:</b> medieval theorists (following Boethius) borrowed these Greek names but <b>re-assigned them to different scales</b> — the ancient Greek Dorian is not our modern Dorian. The names are Greek; the medieval church modes are a re-arrangement; our major/minor system grew out of those modes in the Baroque era. So: tetrachord = Greek invention, names = Greek labels on a later, reshuffled system.</p>
+      </div>
+    </details>
+
     <h2 id="ref-octaves">5 · Octave numbers (C2, C3, C4…)</h2>
     <p>Each letter repeats forever, higher and lower. The number just says which copy you mean — like floor numbers in a building.</p>
     <details class="ref-deeper">
