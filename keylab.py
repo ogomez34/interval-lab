@@ -194,19 +194,43 @@ def sheet_tetra(root_text, tetra_key, tuning_key='standard'):
     out.append('    fret: ' + '  '.join(f'{s:>2}' for s in semis))
     out.append('    note: ' + '  '.join(f'{n:>2}' for n in notes))
 
-    # box on the two lowest strings
+    # every string-pair box: 1-2-3 on the low string, the top note on the next
     label_t, midis, names = TUNINGS[tuning_key]
-    gap_low = midis[1] - midis[0]
-    top_on_next = top - gap_low
     out.append('')
-    out.append(f'BOX (two lowest strings, {names[0]} and {names[1]}):')
-    out.append(f'  {names[0]}: ' + '  '.join(f'{s:>2}' if i == 0 else f'{s:>2}' for i, s in enumerate(semis)) + '   ← 1 2 3')
-    if top_on_next >= 0:
-        out.append(f'  {names[1]}: ' + '  ' * (len(semis) - 1) + f'{top_on_next:>2}' + '   ← the 4th note (top)')
-        out.append(f'  Top note = {note(root + top)} on {names[1]} at fret {top_on_next} ({("same fret" if top_on_next == 0 else "+" + str(top_on_next))}).')
-    else:
-        out.append(f'  (top note stays on the starting string in this tuning)')
-    out.append('  Slide the whole box anywhere — the shape never changes.')
+    out.append('ALL STRING-PAIR BOXES (1 2 3 on the low string, top on the next):')
+    for si in range(len(midis) - 1):
+        gap = midis[si + 1] - midis[si]
+        top_on_next = top - gap
+        if top_on_next < 0:
+            continue
+        raw = [0, semis[1], semis[2], top_on_next]
+        shift = -min(raw)
+        frets = [x + shift for x in raw]
+        top_note = note(root + top)
+        top_label = 'same fret' if top_on_next == 0 else f'+{top_on_next}'
+        out.append(
+            f"  {names[si]:>3}→{names[si + 1]:<3} : "
+            f"low {frets[0]} {frets[1]} {frets[2]} {frets[3]}"
+            f"   ·   top {top_note} on {names[si + 1]} at {top_label}"
+        )
+
+    # the movable two-box scale pattern (this tetrachord as the lower half)
+    out.append('')
+    out.append('TWO-BOX SCALE PATTERN (the memorisation shortcut):')
+    out.append('  Learn ONE box. To build a scale, play the same box again +W frets up.')
+    gap_low = midis[1] - midis[0]
+    for name, lower, upper, gap, close, chord in TETRACHORD_SCALES:
+        if lower != tetra_key:
+            continue
+        gap_label = {1: 'H', 2: 'W'}.get(gap, str(gap))
+        box2_same = [s + top + gap for s in semis]
+        box2_next = [s + top + gap - gap_low for s in semis]
+        close_label = f' + {step_letters([close])} close' if close else ''
+        out.append(f"  {name:<28} : {TETRACHORDS[tetra_key]['name']} + {gap_label} + {TETRACHORDS[upper]['name']}{close_label}")
+        out.append(f"      box 1 (lower): {' '.join(str(s) for s in semis)}   — start on any fret")
+        out.append(f"      box 2 (upper): same shape at +{top + gap} frets  →  {' '.join(str(s) for s in box2_same)}")
+        if min(box2_next) >= 0:
+            out.append(f"      on the next string ({names[0]}→{names[1]}): upper box shifts by -{gap_low}  →  {' '.join(str(s) for s in box2_next)}")
 
     # scales it builds
     out.append('')
