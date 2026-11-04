@@ -21,6 +21,7 @@ let CURRENT_TUNING = TUNINGS.standardE;
 let labelModeState = 'intervals';
 let tuningInfoId = null;
 let lastBuiltSemis = [0,2,4,5,7,9,11,12]; // latest scale from the builder
+let chordDeriveState = { active: false, step: 0, midis: [] }; // "derive the chord" mini-game
 
 export function currentLabelMode() { return labelModeState; }
 export function getCurrentTuning() { return CURRENT_TUNING; }
@@ -368,23 +369,29 @@ function renderScaleBuilder() {
   const upperNotes = U.semis.map(s => formatNoteForDisplay(mod12(rootPc + start + s)));
   const chordToneNotes = [lowerNotes[0], lowerNotes[2], upperNotes[0], upperNotes[2]];
   const chordName = recipe?.chord || 'Custom 7th';
+  const chordSemis = [semis[0], semis[2], semis[4], semis[6]].filter(s => s !== undefined);
+  chordDeriveState.midis = chordSemis.map(s => currentRootMidi() + s);
 
-  const chipRow = (notes) => notes.map((n, i) => {
+  const deriving = chordDeriveState.active;
+  const chipRow = (notes, row) => notes.map((n, i) => {
     const tone = i === 0 || i === 2;
-    return `<span class="tetra-chip ${tone ? 'tone' : 'skip'}" title="${tone ? 'Chord tone — play me' : 'Passing note'}">${n}<small>${i + 1}${tone ? ' · chord' : ''}</small></span>`;
+    const order = row === 'lower' ? (i === 0 ? 1 : 2) : (i === 0 ? 3 : 4);
+    return `<span class="tetra-chip ${tone ? 'tone' : 'skip'}" data-tetra-step="${tone ? order : ''}" title="${tone ? 'Chord tone — tap me in order' : 'Passing note'}">${n}<small>${i + 1}${tone ? ' · chord' : ''}</small></span>`;
   }).join('');
 
   const chordVisual = `
-    <div class="chord-visual">
+    <div class="chord-visual${deriving ? ' deriving' : ''}">
       <div class="chord-rows">
-        <div class="chord-row">${chipRow(lowerNotes)}</div>
+        <div class="chord-row">${chipRow(lowerNotes, 'lower')}</div>
         <div class="chord-gap">↓ ${gapName}${close > 0 ? ` + ${stepName(close)} close` : ''}</div>
-        <div class="chord-row">${chipRow(upperNotes)}</div>
+        <div class="chord-row">${chipRow(upperNotes, 'upper')}</div>
       </div>
       <div class="chord-result">
-        <div class="chord-equals">= <b>${chordName}</b></div>
-        <div class="muted">${chordToneNotes.join(' · ')}</div>
+        ${deriving
+          ? `<div class="chord-equals">= <b>?</b></div><div class="muted">Tap the filled chips in order: lower 1 → lower 3 → upper 1 → upper 3.</div>`
+          : `<div class="chord-equals">= <b>${chordName}</b></div><div class="muted">${chordToneNotes.join(' · ')}</div>`}
       </div>
+      <button type="button" class="secondary" id="deriveChordBtn">${deriving ? 'Show the chord' : '🧠 Derive the chord'}</button>
     </div>
     <p style="margin:0 0 6px 0;color:var(--muted);font-size:13px;">The <b>filled</b> chips are the <b>1st + 3rd</b> note of each half. Stack those four and you have the chord — the other notes are the passing tones.</p>
   `;
@@ -595,6 +602,33 @@ export function initGuitar() {
   $('scaleUpperSel').addEventListener('change', renderScaleBuilder);
   $('scaleGapSel').addEventListener('change', renderScaleBuilder);
   $('builtScalePlayBtn').addEventListener('click', playBuiltScale);
+
+  // "Derive the chord" mini-game: delegated because the builder re-renders.
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#deriveChordBtn')) {
+      chordDeriveState.active = !chordDeriveState.active;
+      chordDeriveState.step = 0;
+      renderScaleBuilder();
+      return;
+    }
+    const chip = e.target.closest('.tetra-chip[data-tetra-step]');
+    if (!chip || !chordDeriveState.active) return;
+    const want = chordDeriveState.step + 1;
+    const got = parseInt(chip.dataset.tetraStep, 10);
+    if (got === want) {
+      chip.classList.add('correct-flash');
+      chordDeriveState.step++;
+      if (chordDeriveState.step >= 4) {
+        chordDeriveState.active = false;
+        renderScaleBuilder();
+        if (chordDeriveState.midis.length === 4) playSequence(chordDeriveState.midis, 0.45, 'guitar');
+      }
+    } else {
+      chip.classList.add('wrong-flash');
+      setTimeout(() => chip.classList.remove('wrong-flash'), 350);
+    }
+  });
+
   $('droneBtn').addEventListener('click', () => {
     toggleDrone(currentRootMidi());
     updateDroneButton();

@@ -127,6 +127,21 @@ export function renderLearn() {
     </section>
 
     <section class="theory-block">
+      <h3>Deriving, not memorising</h3>
+      <p>Everything on this site comes from <b>one idea</b>: <b>“1” is home — every other note is just steps counted from it.</b> You never memorise a scale or chord table; you <b>derive</b> it by walking the steps:</p>
+      <ol class="derive-chain">
+        <li><b>Pick 1</b> — any note, any string. C, F♯, doesn't matter.</li>
+        <li><b>Count steps</b> → that gives you <b>intervals</b> (3 frets = minor 3rd).</li>
+        <li><b>Four notes spanning a perfect 4th</b> → a <b>tetrachord</b> (W W H and friends).</li>
+        <li><b>Lower tetrachord + gap + upper tetrachord</b> → a <b>scale</b>. No table needed.</li>
+        <li><b>1st + 3rd note of each half</b> → the <b>7th chord</b> inside the scale.</li>
+        <li><b>Stack perfect 5ths</b> → the <b>circle of fifths</b>, key signatures, everything.</li>
+      </ol>
+      <p class="muted">Try it right now: start on any note and walk <b>W W H W W W H</b>. You just derived a major scale. That's the whole trick — the rest is just names for the steps you already walked.</p>
+      <p class="muted">Prefer to be walked through it? The <b>🎸 Fretboard</b> tab's <b>Scale builder</b> derives scales and chords for you, and <b>🎯 Practice</b> turns each step into a game.</p>
+    </section>
+
+    <section class="theory-block">
       <h3>Your path</h3>
       <p>Work the stages in order — each unlocks the next family. A stage shows <b>✓</b> when you have answered at least 5 of its questions and sit above 80% accuracy.</p>
       <div class="path-steps" id="pathSteps">${renderPathSteps()}</div>

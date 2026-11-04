@@ -409,3 +409,10 @@
 .chord-equals b {
   color: var(--root);
 }
+
+.chord-visual.deriving .tetra-chip.tone {
+  cursor: pointer;
+}
+.chord-visual.deriving .tetra-chip.tone.correct-flash {
+  outline: 2px solid var(--good);
+}
