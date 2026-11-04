@@ -427,15 +427,27 @@ def main(argv):
         repl()
         return
     tuning_key = 'standard'
+    png_path = None
     args = list(argv)
     if '--tuning' in args:
         i = args.index('--tuning')
         key = args[i + 1] if i + 1 < len(args) else 'standard'
         tuning_key = key if key in TUNINGS else 'standard'
         del args[i:i + 2]
+    if '--png' in args:
+        i = args.index('--png')
+        png_path = args[i + 1] if i + 1 < len(args) else 'keylab.png'
+        del args[i:i + 2]
     cmd = args[0].lower() if args else ''
     try:
-        if cmd == 'key' and len(args) > 1:
+        if png_path and cmd == 'key' and len(args) > 1:
+            root, mode = parse_key(args[1])
+            out = render_key_png(root, mode, tuning_key, png_path)
+            print(f'Saved {out}')
+        elif png_path and cmd == 'tetra' and len(args) > 2:
+            out = render_tetra_png(parse_note(args[1]), args[2].lower(), tuning_key, png_path)
+            print(f'Saved {out}')
+        elif cmd == 'key' and len(args) > 1:
             print(sheet_key(args[1], tuning_key))
         elif cmd == 'tetra' and len(args) > 2:
             print(sheet_tetra(args[1], args[2].lower(), tuning_key))
@@ -448,6 +460,239 @@ def main(argv):
     except Exception as exc:  # noqa: BLE001
         print(f'Error: {exc}', file=sys.stderr)
         sys.exit(1)
+
+
+# ---------------------------------------------------------------- png
+
+try:
+    from PIL import Image, ImageDraw, ImageFont
+    _FONT_PATH = '/System/Library/Fonts/Helvetica.ttc'
+    def _font(size, bold=False):
+        return ImageFont.truetype(_FONT_PATH, size)
+    HAS_PIL = True
+except Exception:  # noqa: BLE001
+    HAS_PIL = False
+
+COL = dict(bg='#FAFAF7', panel='#FFFFFF', ink='#1F2937', muted='#6B7280',
+           root='#E05555', scale='#4E8A4E', accent='#E8B44A', line='#D1D5DB',
+           dark='#1F2937', white='#FFFFFF')
+
+
+def _chip(d, x, y, text, sub=None, fill=None, w=108, h=60, text_color=None, sub_color=None, radius=12):
+    fill = fill or COL['panel']
+    d.rounded_rectangle([x, y, x + w, y + h], radius=radius, fill=fill, outline=COL['line'], width=1)
+    size = 26 if sub is None else 22
+    d.text((x + w / 2, y + h / 2 - (9 if sub else 0)), text, font=_font(size, bold=True),
+           fill=text_color or COL['ink'], anchor='mm')
+    if sub:
+        d.text((x + w / 2, y + h / 2 + 15), sub, font=_font(14, bold=True), fill=sub_color or COL['muted'], anchor='mm')
+
+
+def _heading(d, x, y, text, color=COL['ink']):
+    d.text((x, y), text, font=_font(30, bold=True), fill=color)
+    return y + 46
+
+
+def _center_chips(d, W, y, items, chip_w=108, gap=10, sub=True):
+    """items = list of (text, sub, fill, text_color[, sub_color]). Returns new y."""
+    total = len(items) * chip_w + (len(items) - 1) * gap
+    x = (W - total) / 2
+    for item in items:
+        text, subtext, fill, tc = item[0], item[1], item[2], item[3]
+        sc = item[4] if len(item) > 4 else None
+        _chip(d, x, y, text, subtext if sub else None, fill=fill, w=chip_w, text_color=tc, sub_color=sc)
+        x += chip_w + gap
+    return y + 60 + 24
+
+
+def _notes_chips(d, W, y, pcs, root_pc):
+    items = []
+    for pc in pcs:
+        if pc == root_pc:
+            items.append((note(pc), '1', COL['root'], COL['white'], COL['white']))
+        else:
+            items.append((note(pc), str((pc - root_pc) % 12 and [0,2,4,5,7,9,11].index((pc - root_pc) % 12) + 1 or 1), COL['panel'], COL['ink']))
+    return _center_chips(d, W, y, items)
+
+
+def _draw_fretboard(d, x, y, W, pcs, root_pc, tuning_key):
+    label_t, midis, names = TUNINGS[tuning_key]
+    cols = 13
+    cell_w = (W - 150) / cols
+    row_h = 52
+    header_h = 36
+    d.text((x, y + 4), 'FRETBOARD — ' + label_t, font=_font(24, bold=True), fill=COL['ink'])
+    top = y + 50
+    for f in range(cols):
+        d.text((x + 150 + f * cell_w + cell_w / 2, top + header_h / 2), str(f), font=_font(15), fill=COL['muted'], anchor='mm')
+    for r, si in enumerate(range(len(midis) - 1, -1, -1)):
+        base = midis[si]
+        row_y = top + header_h + r * row_h
+        d.text((x + 60, row_y + row_h / 2), names[si], font=_font(20, bold=True), fill=COL['ink'], anchor='rm')
+        for f in range(cols):
+            cx = x + 150 + f * cell_w + cell_w / 2
+            cy = row_y + row_h / 2
+            d.line([(x + 150 + f * cell_w, row_y), (x + 150 + f * cell_w, row_y + row_h)], fill=COL['line'], width=1)
+            pc = mod12(base + f)
+            if pc in pcs:
+                fill = COL['root'] if pc == root_pc else COL['scale']
+                d.ellipse([cx - 15, cy - 15, cx + 15, cy + 15], fill=fill, outline=COL['white'], width=2)
+                d.text((cx, cy), note(pc), font=_font(13, bold=True), fill=COL['white'], anchor='mm')
+            else:
+                d.ellipse([cx - 3, cy - 3, cx + 3, cy + 3], fill=COL['line'])
+        d.line([(x + 150, row_y + row_h), (x + 150 + cols * cell_w, row_y + row_h)], fill=COL['line'], width=1)
+    bottom = top + header_h + 6 * row_h
+    return bottom + 30
+
+
+def _save(d, img, path):
+    img = img.crop((0, 0, img.width, max(1, d._last_y + 60)))
+    img.save(path)
+    return path
+
+
+def render_key_png(root, mode, tuning_key, path):
+    if not HAS_PIL:
+        raise SystemExit('Pillow is required for PNG output: pip install pillow')
+    W = 1420
+    img = Image.new('RGB', (W, 2200), COL['bg'])
+    d = ImageDraw.Draw(img)
+
+    # title
+    d.rectangle([0, 0, W, 110], fill=COL['dark'])
+    d.text((W / 2, 55), f"KEY — {note(root)} {mode}", font=_font(46, bold=True), fill=COL['white'], anchor='mm')
+
+    semis = key_scale_semis(root, mode)
+    pcs = [mod12(root + s) for s in semis]
+    y = 150
+
+    # notes
+    y = _heading(d, 60, y, 'THE KEY — 7 NOTES')
+    y = _notes_chips(d, W, y, pcs, root)
+    y += 26
+
+    # 1) tetrachords
+    y = _heading(d, 60, y, '1 · TETRACHORDS (the essence)')
+    row = TETRACHORD_SCALES[0] if mode == 'major' else TETRACHORD_SCALES[1]
+    name, lower, upper, gap, close, chord = row
+    L, U = TETRACHORDS[lower], TETRACHORDS[upper]
+    top_l = L['semis'][-1]
+    start = top_l + gap
+    gap_label = {1: 'H', 2: 'W'}.get(gap, str(gap))
+    lower_notes = [note(root + s) for s in L['semis']]
+    upper_notes = [note(root + start + s) for s in U['semis']]
+    # lower row
+    items = [(n, str(i + 1), COL['root'] if i == 0 else COL['panel'], COL['white'] if i == 0 else COL['ink'], COL['white'] if i == 0 else None)
+             for i, n in enumerate(lower_notes)]
+    y = _center_chips(d, W, y, items)
+    # gap badge
+    gx = W / 2 - 40
+    _chip(d, gx, y, '+ ' + gap_label, fill=COL['accent'], w=80, h=44, text_color=COL['ink'])
+    y += 44 + 14
+    # upper row
+    items = [(n, str(i + 5), COL['panel'], COL['ink']) for i, n in enumerate(upper_notes)]
+    y = _center_chips(d, W, y, items)
+    d.text((W / 2, y), f"{' '.join(lower_notes)}  |  {gap_label}  |  {' '.join(upper_notes)}  =  {note(root)} {mode}",
+           font=_font(22), fill=COL['muted'], anchor='mm')
+    y += 60
+
+    # 2) step recipe
+    y = _heading(d, 60, y, '2 · STEP RECIPE — WALK IT')
+    steps = steps_of_semis(semis + [12])
+    items = [(step_letters([s]), None, COL['panel'] if s != 1 else COL['accent'], COL['ink']) for s in steps]
+    y = _center_chips(d, W, y, items, chip_w=80, sub=False)
+    d.text((W / 2, y), f"Start on {note(root)} and walk these steps — you just derived the scale.", font=_font(22), fill=COL['muted'], anchor='mm')
+    y += 60
+
+    # 3) fifths
+    y = _heading(d, 60, y, '3 · STACK FIFTHS — THE CIRCLE (sharps in order)')
+    fifth_root = root + 3 if mode == 'minor' else root
+    fifths = [note(fifth_root + s) for s in FIFTHS_ORDER]
+    items = [(n, str(i + 1), COL['root'] if i == 0 else COL['panel'], COL['white'] if i == 0 else COL['ink'], COL['white'] if i == 0 else None)
+             for i, n in enumerate(fifths)]
+    y = _center_chips(d, W, y, items)
+    y += 30
+
+    # 4) chords
+    y = _heading(d, 60, y, '4 · CHORDS OF THE KEY — the 7th chord on each degree')
+    qualities = ['maj7', 'm7', 'm7', 'maj7', '7', 'm7', 'm7b5'] if mode == 'major' else ['m7', 'm7b5', 'maj7', 'm7', 'm7', 'maj7', '7']
+    items = [(note(root + s), q, COL['root'] if i == 0 else COL['panel'], COL['white'] if i == 0 else COL['ink'], COL['white'] if i == 0 else None)
+             for i, (s, q) in enumerate(zip(semis, qualities))]
+    y = _center_chips(d, W, y, items, chip_w=130, gap=8)
+    y += 20
+
+    # 5) fretboard
+    y = _draw_fretboard(d, 60, y, W - 120, set(pcs), root, tuning_key)
+    d._last_y = y
+
+    _save(d, img, path)
+    return path
+
+
+def render_tetra_png(root, tetra_key, tuning_key, path):
+    if not HAS_PIL:
+        raise SystemExit('Pillow is required for PNG output: pip install pillow')
+    W = 1420
+    img = Image.new('RGB', (W, 2000), COL['bg'])
+    d = ImageDraw.Draw(img)
+    t = TETRACHORDS[tetra_key]
+    semis = t['semis']
+    notes = [note(root + s) for s in semis]
+
+    d.rectangle([0, 0, W, 110], fill=COL['dark'])
+    d.text((W / 2, 55), f"TETRACHORD — {t['name']} from {note(root)}", font=_font(46, bold=True), fill=COL['white'], anchor='mm')
+    y = 150
+
+    y = _heading(d, 60, y, f"{t['steps']}   ·   frets {' – '.join(str(s) for s in semis)}   ·   {t['span']}")
+    items = [(n, str(i + 1), COL['root'] if i == 0 else COL['panel'], COL['white'] if i == 0 else COL['ink'], COL['white'] if i == 0 else None)
+             for i, n in enumerate(notes)]
+    y = _center_chips(d, W, y, items)
+    y += 26
+
+    # ladder
+    y = _heading(d, 60, y, 'THE LADDER — ONE STRING')
+    y = _center_chips(d, W, y, [(str(s), n, COL['root'] if i == 0 else COL['panel'], COL['white'] if i == 0 else COL['ink'], COL['white'] if i == 0 else None)
+                                for i, (s, n) in enumerate(zip(semis, notes))])
+    y += 20
+
+    # string-pair boxes
+    y = _heading(d, 60, y, 'THE BOX ON EVERY STRING PAIR')
+    label_t, midis, names = TUNINGS[tuning_key]
+    top = semis[-1]
+    for si in range(len(midis) - 1):
+        gap = midis[si + 1] - midis[si]
+        top_on_next = top - gap
+        if top_on_next < 0:
+            continue
+        raw = [0, semis[1], semis[2], top_on_next]
+        shift = -min(raw)
+        frets = [x + shift for x in raw]
+        d.text((80, y), f"{names[si]} → {names[si+1]}", font=_font(24, bold=True), fill=COL['ink'])
+        d.text((330, y), f"low: {'  '.join(str(f) for f in frets)}    ·    top {note(root + top)} on {names[si+1]} at {'same fret' if top_on_next == 0 else '+' + str(top_on_next)}",
+               font=_font(22), fill=COL['muted'])
+        y += 44
+    y += 20
+
+    # two-box scale pattern
+    y = _heading(d, 60, y, 'THE TWO-BOX SCALE PATTERN — LEARN ONE BOX')
+    gap_low = midis[1] - midis[0]
+    for name, lower, upper, gap, close, chord in TETRACHORD_SCALES:
+        if lower != tetra_key:
+            continue
+        gap_label = {1: 'H', 2: 'W'}.get(gap, str(gap))
+        box2 = [s + top + gap for s in semis]
+        d.text((80, y), f"{name}:  {t['name']} + {gap_label} + {TETRACHORDS[upper]['name']}",
+               font=_font(26, bold=True), fill=COL['ink'])
+        y += 40
+        d.text((110, y), f"box 1: {' '.join(str(s) for s in semis)}      box 2 (same shape, +{top + gap} frets): {' '.join(str(s) for s in box2)}",
+               font=_font(22), fill=COL['muted'])
+        y += 46
+    y += 30
+
+    d._last_y = y
+    _save(d, img, path)
+    return path
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])
