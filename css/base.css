@@ -709,3 +709,66 @@ body[data-nav-pos="right"] .nav-brand {
 }
 .four-chord-chip b { font-size: 15px; }
 .four-chord-chip small { font-size: 12px; color: var(--muted); }
+
+/* ---- Shapes tab (htuch tetrachord method) ---- */
+.tetra-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.tetra-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel2);
+  min-width: 130px;
+}
+.tetra-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.shape-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+.shape-fig {
+  margin: 0;
+  text-align: center;
+}
+.shape-fig figcaption {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.shape-svg {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  width: 230px;
+  max-width: 100%;
+}
+.shape-fretnum {
+  font-size: 12px;
+  fill: var(--muted);
+}
+.shape-note {
+  font-size: 12px;
+  font-weight: 700;
+  fill: #fff;
+}
+.octave-box {
+  margin: 10px 0;
+}
+.octave-box .shape-svg {
+  width: 320px;
+}
+.table-scroll {
+  overflow-x: auto;
+}
