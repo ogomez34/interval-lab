@@ -670,3 +670,42 @@ body[data-nav-pos="right"] .nav-brand {
 .derive-mode table td.revealed {
   filter: none;
 }
+
+/* ---- Modes wheel + 4-chord formula ---- */
+.map div.home-chip,
+.four-chord-chip.home-chip {
+  background: var(--root);
+  color: #141414;
+}
+.map div.home-chip small,
+.four-chord-chip.home-chip small {
+  color: #141414;
+}
+.mode-steps {
+  text-align: center;
+  color: var(--muted);
+  margin-top: 8px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  width: 100%;
+}
+#fourChordOut {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin: 10px 0;
+}
+.four-chord-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel2);
+}
+.four-chord-chip b { font-size: 15px; }
+.four-chord-chip small { font-size: 12px; color: var(--muted); }

@@ -1,9 +1,9 @@
 import { CIRCLE_MAJOR, CIRCLE_MINOR, MAJOR_SCALE, NATURAL_MINOR_SCALE,
-  scaleNotesFromPc, noteNameToPc, TUNINGS, octaveShiftPairs, INTERVAL_DETAILS } from '../music.js';
+  scaleNotesFromPc, noteNameToPc, TUNINGS, octaveShiftPairs, INTERVAL_DETAILS, mod12, $ } from '../music.js';
 import { playChord, playMidi } from '../audio.js';
 import { renderCircleOfFifths as renderCircleInto } from '../circle.js';
 import { on } from '../events.js';
-import { loadStats, getIntervalAccuracy } from '../storage.js';
+import { loadStats, getIntervalAccuracy, formatNoteForDisplay } from '../storage.js';
 
 export function refLink(anchor, label) {
   return `<a href="#" class="ref-link" data-ref-anchor="${anchor}">${label} →</a>`;
@@ -22,6 +22,10 @@ export function renderReference() {
       <a href="#ref-chords">6 · Chords</a>
       <a href="#ref-nashville">7 · Nashville numbers</a>
       <a href="#ref-circle">8 · Circle of fifths</a>
+      <a href="#ref-modes">9 · Modes — one scale, different home</a>
+      <a href="#ref-fourchord">10 · The 4-chord formula</a>
+      <a href="#ref-chordscale">11 · Chord-scales</a>
+      <a href="#ref-pentatonic">12 · Pentatonic safe zone</a>
       <a href="#ref-heatmap">Your interval heatmap</a>
     </nav>
 
@@ -292,6 +296,53 @@ export function renderReference() {
       </div>
     </details>
 
+    <h2 id="ref-modes">9 · Modes — one scale, different home</h2>
+    <p>All seven modes are the <b>same 7 notes</b>. Nothing new to memorise — the only thing that changes is <b>which note is “1”</b>.</p>
+    <div class="settings-row">
+      <label>Make this the home note
+        <select id="modeHome">
+          <option value="1">1 · Ionian (Major)</option>
+          <option value="2">2 · Dorian</option>
+          <option value="3">3 · Phrygian</option>
+          <option value="4">4 · Lydian</option>
+          <option value="5">5 · Mixolydian</option>
+          <option value="6">6 · Aeolian (Natural minor)</option>
+          <option value="7">7 · Locrian</option>
+        </select>
+      </label>
+    </div>
+    <div class="map" id="modeWheel"></div>
+    <p style="color:var(--muted);font-size:13px;">The filled chip is <b>1</b>. The step pattern underneath (W/H) is what gives each mode its mood — same notes, different gravity.</p>
+
+    <h2 id="ref-fourchord">10 · The 4-chord formula</h2>
+    <p>Most of pop and rock is four functions: <b>1 – 5 – 6– – 4</b> (the dash means minor). Change the key and the numbers stay exactly the same.</p>
+    <div class="settings-row">
+      <label>Key <select id="fourChordKey"></select></label>
+      <button type="button" class="play-btn" id="fourChordPlay">▶ Play it</button>
+    </div>
+    <div class="card" id="fourChordOut"></div>
+    <p style="color:var(--muted);font-size:13px;">Same numbers in every key — that's the Nashville trick applied to the whole song. (Let It Be, Don't Stop Believin', No Woman No Cry, With or Without You… all ride some rotation of this.)</p>
+
+    <h2 id="ref-chordscale">11 · Chord-scales — the chord already contains its scale</h2>
+    <p>Jazz's big simplification: <b>don't learn a scale for every chord — read the chord and fill the gaps.</b> The chord tones go on strong beats; the gaps are your passing notes.</p>
+    <table>
+      <tr><th>Chord</th><th>Chord tones</th><th>Fill the gaps with…</th><th>You get</th></tr>
+      <tr><td>Cmaj7</td><td>C E G B</td><td>D F A</td><td>C major (Ionian)</td></tr>
+      <tr><td>Am7</td><td>A C E G</td><td>B D F</td><td>A Dorian / natural minor</td></tr>
+      <tr><td>G7</td><td>G B D F</td><td>A C E</td><td>G Mixolydian</td></tr>
+      <tr><td>Am(maj7)</td><td>A C E G♯</td><td>B D F</td><td>A harmonic minor</td></tr>
+      <tr><td>C°7</td><td>C E♭ G♭ A</td><td>D♭ F A♭ B♭</td><td>Whole-half diminished</td></tr>
+    </table>
+    <p style="color:var(--muted);font-size:13px;">Notice the loop: the chord was <b>derived</b> from the scale (1st + 3rd of each tetrachord) — now you're running it backwards to recover the scale from the chord.</p>
+
+    <h2 id="ref-pentatonic">12 · Pentatonic — the safe zone</h2>
+    <p>Five notes that sound good over almost anything: drop the two notes that clash the most.</p>
+    <table>
+      <tr><th>Pentatonic</th><th>Recipe</th><th>From C / A</th><th>Use it over</th></tr>
+      <tr><td><b>Major</b></td><td>1 – 2 – 3 – 5 – 6 (drop 4 & 7)</td><td>C D E G A</td><td>Major chords, country, pop</td></tr>
+      <tr><td><b>Minor</b></td><td>1 – ♭3 – 4 – 5 – ♭7</td><td>A C D E G</td><td>Minor chords, blues, rock</td></tr>
+    </table>
+    <p>Add the missing notes back <b>one at a time</b> for colour — the 4th (sweet) and the 7th (tense) are exactly the notes you dropped. That's the whole blues-rock method.</p>
 
     <h2 id="ref-heatmap">Your interval heatmap</h2>
     <p>Every question you answer in Ear or Practice feeds this map. <b>Green = you hear it. Red = it hears you.</b> Get each interval above 80% and the Learn path marks its stage ✓.</p>
@@ -324,6 +375,73 @@ export function initReference() {
     const cell = e.target.closest('.derive-mode td');
     if (cell) cell.classList.add('revealed');
   });
+
+  // Modes: one scale, different home.
+  $('modeHome').addEventListener('change', renderModeWheel);
+  renderModeWheel();
+
+  // 4-chord formula: key picker + playback.
+  populateFourChordKey();
+  $('fourChordKey').addEventListener('change', renderFourChord);
+  $('fourChordPlay').addEventListener('click', playFourChord);
+  renderFourChord();
+}
+
+const MODE_WHEEL_NOTES = ['C','D','E','F','G','A','B'];
+const MODE_WHEEL_SEMIS = [0,2,4,5,7,9,11];
+const MODE_NAMES = ['Ionian (Major)','Dorian','Phrygian','Lydian','Mixolydian','Aeolian (Natural minor)','Locrian'];
+
+function renderModeWheel() {
+  const el = document.getElementById('modeWheel');
+  if (!el) return;
+  const degree = parseInt(document.getElementById('modeHome').value, 10);
+  const chips = [];
+  const steps = [];
+  for (let i = 0; i < 7; i++) {
+    const idx = (degree - 1 + i) % 7;
+    chips.push(`<div class="${i === 0 ? 'home-chip' : ''}"><b>${MODE_WHEEL_NOTES[idx]}</b><small>${i + 1}</small></div>`);
+    if (i < 6) {
+      const cur = MODE_WHEEL_SEMIS[idx];
+      const next = MODE_WHEEL_SEMIS[(idx + 1) % 7];
+      const gap = next > cur ? next - cur : next + 12 - cur;
+      steps.push(gap === 1 ? 'H' : 'W');
+    }
+  }
+  el.innerHTML = chips.join('') + `<div class="mode-steps">${MODE_NAMES[degree - 1]} · ${steps.join(' – ')}</div>`;
+}
+
+function populateFourChordKey() {
+  const sel = document.getElementById('fourChordKey');
+  if (!sel || sel.options.length) return;
+  for (let pc = 0; pc < 12; pc++) {
+    const opt = document.createElement('option');
+    opt.value = pc;
+    opt.textContent = formatNoteForDisplay(pc);
+    sel.appendChild(opt);
+  }
+}
+
+function renderFourChord() {
+  const out = document.getElementById('fourChordOut');
+  if (!out) return;
+  const rootPc = parseInt(document.getElementById('fourChordKey').value, 10);
+  const degs = [
+    { num: '1',  pc: rootPc,            suffix: '' },
+    { num: '5',  pc: mod12(rootPc + 7), suffix: '' },
+    { num: '6–', pc: mod12(rootPc + 9), suffix: 'm' },
+    { num: '4',  pc: mod12(rootPc + 5), suffix: '' }
+  ];
+  out.innerHTML = degs.map(d => `
+    <div class="four-chord-chip ${d.num === '1' ? 'home-chip' : ''}">
+      <b>${d.num}</b><small>${formatNoteForDisplay(d.pc)}${d.suffix}</small>
+    </div>
+  `).join('') + `<div class="mode-steps">1 – 5 – 6– – 4 in ${formatNoteForDisplay(rootPc)}</div>`;
+}
+
+function playFourChord() {
+  const rootPc = parseInt(document.getElementById('fourChordKey').value, 10);
+  const chords = [[0,4,7],[7,11,14],[9,12,16],[5,9,12]].map(c => c.map(s => 48 + rootPc + s));
+  chords.forEach((midis, i) => setTimeout(() => playChord(midis, 1.0), i * 1100));
 }
 
 function renderHeatmap() {
