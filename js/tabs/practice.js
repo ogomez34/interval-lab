@@ -23,8 +23,9 @@ let twinState = { originMidi: null, targetKeys: new Set(), selected: new Set(), 
 let fiState = { rootPc: null, semis: null, selected: new Set(), answered: false, correct: 0, total: 0 };
 let hpState = { rootPc: null, semis: null, rootMidi: 0, targetMidi: 0, selected: new Set(), answered: false, correct: 0, total: 0 };
 let tetraState = { string: 0, rootFret: 0, rootPc: null, semis: null, targets: [], step: 0, answered: false, correct: 0, total: 0 };
+let walkState = { string: 0, rootFret: 0, rootPc: null, name: '', steps: [], targets: [], step: 0, answered: false, correct: 0, total: 0 };
 
-const FB_MODES = ['findInterval', 'hearPlay', 'octaveTwin', 'tetraLadder'];
+const FB_MODES = ['findInterval', 'hearPlay', 'octaveTwin', 'tetraLadder', 'walkScale'];
 
 export function renderPractice() {
   const weakSpotDefault = getSetting('weakSpotMode', false) ? 'checked' : '';
@@ -47,6 +48,7 @@ export function renderPractice() {
           <option value="hearPlay" ${sel('hearPlay')}>Hear it, play it (on the neck)</option>
           <option value="octaveTwin" ${sel('octaveTwin')}>Find its octave twin (timed)</option>
           <option value="tetraLadder" ${sel('tetraLadder')}>Tetrachord ladder (eye–hand)</option>
+          <option value="walkScale" ${sel('walkScale')}>Walk the scale (derive it)</option>
         </select>
       </label>
       <div id="textModeControls" style="display:${isFb ? 'none' : 'contents'};">
@@ -141,6 +143,20 @@ export function renderPractice() {
           <span id="tetraStats" style="font-size:13px;color:var(--muted);"></span>
         </div>
         <div class="fb-question" id="tetraQuestion">Press "New question" to start.</div>
+      </div>
+
+      <div id="walkScaleGame" style="display:${mode === 'walkScale' ? 'block' : 'none'};">
+        <p>Derive a scale note by note: the app gives you the <b>step recipe</b> (W W H W W W H…) and plays it. <b>Tap the notes in order</b> by walking those steps from the root. ${info('Why this drill?', `
+          <p>This is the purest form of the whole method: a scale is not a memorised box — it's a <b>path you walk</b>. Follow the recipe with your hand and you can build any scale from any note.</p>
+          <p>W = whole step (2 frets), H = half step (1 fret).</p>
+        `)}</p>
+        <div class="mini-controls">
+          <button class="primary" id="walkNewQ">New question</button>
+          <button class="play-btn" id="walkReplay">Replay</button>
+          <button class="secondary" id="walkReveal">Reveal</button>
+          <span id="walkStats" style="font-size:13px;color:var(--muted);"></span>
+        </div>
+        <div class="fb-question" id="walkQuestion">Press "New question" to start.</div>
       </div>
 
       <div id="twinGame" style="display:${mode === 'octaveTwin' ? 'block' : 'none'};">
@@ -514,6 +530,9 @@ export function initPractice() {
   $('tetraNewQ').addEventListener('click', newTetraQ);
   $('tetraReplay').addEventListener('click', playTetraLadder);
   $('tetraReveal').addEventListener('click', revealTetra);
+  $('walkNewQ').addEventListener('click', newWalkQ);
+  $('walkReplay').addEventListener('click', playWalkScale);
+  $('walkReveal').addEventListener('click', revealWalk);
   $('twinNewQ').addEventListener('click', newTwinQ);
   $('twinReveal').addEventListener('click', revealTwin);
 
@@ -587,6 +606,7 @@ function applyModeVisibility() {
   $('findIntervalGame').style.display = state.mode === 'findInterval' ? 'block' : 'none';
   $('hearPlayGame').style.display = state.mode === 'hearPlay' ? 'block' : 'none';
   $('tetraGame').style.display = state.mode === 'tetraLadder' ? 'block' : 'none';
+  $('walkScaleGame').style.display = state.mode === 'walkScale' ? 'block' : 'none';
   $('twinGame').style.display = state.mode === 'octaveTwin' ? 'block' : 'none';
 }
 
@@ -597,6 +617,7 @@ function routeGameClick(cell) {
   else if (state.mode === 'hearPlay') handleHearPlayClick({ target: cell });
   else if (state.mode === 'octaveTwin') handleTwinClick({ target: cell });
   else if (state.mode === 'tetraLadder') handleTetraClick({ target: cell });
+  else if (state.mode === 'walkScale') handleWalkClick({ target: cell });
 }
 
 function ensurePfbFretboard() {
@@ -610,13 +631,16 @@ function ensurePfbFretboard() {
   hpState.correct = 0; hpState.total = 0;
   twinState.correct = 0; twinState.total = 0;
   tetraState.correct = 0; tetraState.total = 0;
+  walkState.correct = 0; walkState.total = 0;
   $('fiStats').textContent = '';
   $('hpStats').textContent = '';
   $('twinStats').textContent = '';
   $('tetraStats').textContent = '';
+  $('walkStats').textContent = '';
   if (state.mode === 'findInterval') newFindIntervalQ();
   else if (state.mode === 'hearPlay') newHearPlayQ();
   else if (state.mode === 'tetraLadder') newTetraQ();
+  else if (state.mode === 'walkScale') newWalkQ();
   else newTwinQ();
 }
 
@@ -861,6 +885,114 @@ function revealTetra() {
   const notes = tetraState.targets.map(t => formatNoteForDisplay(t.pc)).join(' · ');
   $('tetraQuestion').innerHTML = `<b>${name}</b> ladder: ${notes} — on the ${getCurrentTuning().strings[tetraState.string].name} string, frets ${tetraState.targets.map(t => t.fret).join(' – ')}.`;
   $('tetraStats').textContent = `Ladders: ${tetraState.correct}/${tetraState.total}`;
+}
+
+// ---- Fretboard game: "Walk the scale" (derive it note by note) ----
+
+const SCALE_WALK_RECIPES = [
+  { name: 'Major',         steps: [2,2,1,2,2,2,1] },
+  { name: 'Natural minor', steps: [2,1,2,2,1,2,2] },
+  { name: 'Dorian',        steps: [2,1,2,2,2,1,2] },
+  { name: 'Mixolydian',    steps: [2,2,1,2,2,1,2] }
+];
+
+const stepLetters = (steps) => steps.map(s => s === 2 ? 'W' : 'H').join(' ');
+
+function playWalkScale() {
+  if (!walkState.targets || !walkState.targets.length) return;
+  playSequence(walkState.targets.map(t => t.midi), 0.4, 'guitar');
+}
+
+function newWalkQ() {
+  const tuning = getCurrentTuning();
+  const strings = tuning.strings;
+  const recipe = randomChoice(SCALE_WALK_RECIPES);
+  const si = Math.floor(Math.random() * strings.length);
+  const rootFret = Math.floor(Math.random() * (PFB_FRETS - 12 + 1)); // full octave fits
+  const rootMidi = strings[si].midi + rootFret;
+  const rootPc = mod12(rootMidi);
+
+  const targets = [0];
+  let pos = 0;
+  recipe.steps.forEach(s => { pos += s; targets.push(pos); });
+
+  walkState.string = si;
+  walkState.rootFret = rootFret;
+  walkState.rootPc = rootPc;
+  walkState.name = recipe.name;
+  walkState.steps = recipe.steps;
+  walkState.targets = targets.map(semis => ({
+    string: si,
+    fret: rootFret + semis,
+    midi: rootMidi + semis,
+    pc: mod12(rootMidi + semis)
+  }));
+  walkState.step = 0;
+  walkState.answered = false;
+  walkState.correct = walkState.correct ?? 0;
+  walkState.total = walkState.total ?? 0;
+
+  renderFretboardInto($('pfbFretboard'), {
+    tuning,
+    rootPc,
+    scale: [0],
+    showAll: false,
+    intervalOverlay: false,
+    noFlash: false,
+    delegateCellClicks: true,
+    onCellClick: (cell) => routeGameClick(cell)
+  });
+  const targetKeys = new Set(walkState.targets.map(t => `${t.string}-${t.fret}`));
+  document.querySelectorAll('#pfbFretboard .fb-cell').forEach(c => {
+    if (targetKeys.has(`${c.dataset.string}-${c.dataset.fret}`)) c.classList.add('quiz-target');
+  });
+
+  $('walkQuestion').innerHTML = `<b>${recipe.name} scale</b> on the ${strings[si].name} string from fret ${rootFret}. Recipe: <b>${stepLetters(recipe.steps)}</b> — tap the notes in order.`;
+  $('walkStats').textContent = `Scales: ${walkState.correct}/${walkState.total}`;
+  playWalkScale();
+}
+
+function handleWalkClick(e) {
+  const cell = e.target.closest('.fb-cell');
+  if (!cell || walkState.answered || !walkState.targets || !walkState.targets.length) return;
+  const string = parseInt(cell.dataset.string, 10);
+  const fret = parseInt(cell.dataset.fret, 10);
+  const expected = walkState.targets[walkState.step];
+
+  if (string === expected.string && fret === expected.fret) {
+    cell.classList.add('correct-flash');
+    playMidi(expected.midi, 0.7, 'guitar');
+    walkState.step++;
+    if (walkState.step >= walkState.targets.length) {
+      walkState.answered = true;
+      walkState.total++;
+      walkState.correct++;
+      $('walkQuestion').innerHTML = `✓ You derived the <b>${walkState.name} scale</b> by walking <b>${stepLetters(walkState.steps)}</b>. Next one?`;
+      $('walkStats').textContent = `Scales: ${walkState.correct}/${walkState.total}`;
+      setTimeout(playWalkScale, 600);
+    } else {
+      $('walkQuestion').textContent = `Good — next note (${walkState.step + 1}/${walkState.targets.length}).`;
+    }
+  } else {
+    cell.classList.add('wrong-flash');
+    setTimeout(() => cell.classList.remove('wrong-flash'), 350);
+  }
+}
+
+function revealWalk() {
+  if (!walkState.targets || !walkState.targets.length) return;
+  walkState.answered = true;
+  walkState.total++;
+  const cells = document.querySelectorAll('#pfbFretboard .fb-cell');
+  cells.forEach(c => {
+    const key = `${c.dataset.string}-${c.dataset.fret}`;
+    if (walkState.targets.some(t => `${t.string}-${t.fret}` === key)) {
+      c.classList.add('correct-flash', 'quiz-correct');
+    }
+  });
+  const notes = walkState.targets.map(t => formatNoteForDisplay(t.pc)).join(' · ');
+  $('walkQuestion').innerHTML = `<b>${walkState.name} scale</b>: ${notes} — recipe <b>${stepLetters(walkState.steps)}</b> on the ${getCurrentTuning().strings[walkState.string].name} string.`;
+  $('walkStats').textContent = `Scales: ${walkState.correct}/${walkState.total}`;
 }
 
 // ---- Fretboard game: "Find its octave twin" (timed) ----
