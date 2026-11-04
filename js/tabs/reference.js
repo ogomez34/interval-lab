@@ -51,7 +51,7 @@ export function renderReference() {
     <details class="ref-deeper">
       <summary>The full interval table</summary>
       <div class="ref-deeper-body">
-        <table>
+        <table id="intervalTable">
           <tr><th>Interval</th><th>Semitones</th><th>From C</th><th>Sounds like</th></tr>
           <tr><td>Unison</td><td>0</td><td>C</td><td>—</td></tr>
           <tr><td>Minor 2nd</td><td>1</td><td>C# / Db</td><td>Jaws theme</td></tr>
@@ -67,6 +67,7 @@ export function renderReference() {
           <tr><td>Major 7th</td><td>11</td><td>B</td><td>Take On Me (chorus)</td></tr>
           <tr><td>Octave</td><td>12</td><td>C</td><td>Somewhere Over the Rainbow</td></tr>
         </table>
+        <p><button type="button" class="secondary derive-toggle" data-target="intervalTable">🧠 Test me</button> — blurs the answers; tap a cell to reveal it.</p>
       </div>
     </details>
     <p><b>Counting instead of guessing:</b> you don't have to recite the alphabet backwards to find a note — just count steps. If you're on C and go back 3 steps, you land on A. It's the same counting you already do with stairs or a clock, just with 7 letters instead of 12 numbers.</p>
@@ -206,7 +207,7 @@ export function renderReference() {
     <p>Every chord is the <b>root</b> note plus a set of intervals stacked on top. Try it yourself in the <b>🎵 Chord library</b> (Fretboard tab) — pick a chord type and the fretboard lights up every matching note, with each note's interval degree labelled.</p>
     <details class="ref-deeper">
       <summary>Chord recipes — the full list</summary>
-      <div class="ref-deeper-body">
+      <div class="ref-deeper-body" id="chordTables">
         <h3>Triads (3-note chords)</h3>
         <table>
           <tr><th>Chord</th><th>Intervals</th><th>From C</th><th>Sound</th></tr>
@@ -227,6 +228,7 @@ export function renderReference() {
           <tr><td>Minor 7♭5</td><td>1 – ♭3 – ♭5 – ♭7</td><td>C – E♭ – G♭ – B♭</td><td>Jazz, unstable</td></tr>
           <tr><td>Diminished 7</td><td>1 – ♭3 – ♭5 – ♭♭7</td><td>C – E♭ – G♭ – A</td><td>Extremely tense</td></tr>
         </table>
+        <p><button type="button" class="secondary derive-toggle" data-target="chordTables">🧠 Test me</button> — blurs the answers; tap a cell to reveal it.</p>
         <h3>Symbols you'll see</h3>
         <ul>
           <li><b>♭</b> flat (one semitone lower) · <b>♯</b> sharp (one semitone higher)</li>
@@ -308,6 +310,20 @@ export function initReference() {
   on('note-names-change', renderCircleOfFifths);
   // Re-read stats whenever the Reference tab is opened.
   on('tab-visible', (tab) => { if (tab === 'ref') renderHeatmap(); });
+
+  // "Test me" toggles on reference tables: blur the answer columns until tapped.
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.derive-toggle');
+    if (btn) {
+      const target = document.getElementById(btn.dataset.target);
+      if (!target) return;
+      target.classList.toggle('derive-mode');
+      btn.textContent = target.classList.contains('derive-mode') ? '👁 Show answers' : '🧠 Test me';
+      return;
+    }
+    const cell = e.target.closest('.derive-mode td');
+    if (cell) cell.classList.add('revealed');
+  });
 }
 
 function renderHeatmap() {

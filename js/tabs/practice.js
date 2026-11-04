@@ -1,4 +1,4 @@
-import { LEVELS, INTERVALS, LETTER_TO_SEMI, EAR_STAGES, TETRACHORDS, intervalDetail, $, randomChoice, mod12, formatNoteName } from '../music.js';
+import { LEVELS, INTERVALS, LETTER_TO_SEMI, EAR_STAGES, TETRACHORDS, TETRACHORD_SCALES, intervalDetail, $, randomChoice, mod12, formatNoteName } from '../music.js';
 import { playMidi, playSequence } from '../audio.js';
 import {
   loadStats, recordAttempt, resetStats,
@@ -24,8 +24,10 @@ let fiState = { rootPc: null, semis: null, selected: new Set(), answered: false,
 let hpState = { rootPc: null, semis: null, rootMidi: 0, targetMidi: 0, selected: new Set(), answered: false, correct: 0, total: 0 };
 let tetraState = { string: 0, rootFret: 0, rootPc: null, semis: null, targets: [], step: 0, answered: false, correct: 0, total: 0 };
 let walkState = { string: 0, rootFret: 0, rootPc: null, name: '', steps: [], targets: [], step: 0, answered: false, correct: 0, total: 0 };
+let dkState = { rootPc: null, order: [], step: 0, answered: false, correct: 0, total: 0 };
+let dcState = { recipe: null, rootPc: 0, step: 0, answered: false, correct: 0, total: 0, midis: [] };
 
-const FB_MODES = ['findInterval', 'hearPlay', 'octaveTwin', 'tetraLadder', 'walkScale'];
+const FB_MODES = ['findInterval', 'hearPlay', 'octaveTwin', 'tetraLadder', 'walkScale', 'deriveKey', 'deriveChord'];
 
 export function renderPractice() {
   const weakSpotDefault = getSetting('weakSpotMode', false) ? 'checked' : '';
@@ -49,6 +51,8 @@ export function renderPractice() {
           <option value="octaveTwin" ${sel('octaveTwin')}>Find its octave twin (timed)</option>
           <option value="tetraLadder" ${sel('tetraLadder')}>Tetrachord ladder (eye–hand)</option>
           <option value="walkScale" ${sel('walkScale')}>Walk the scale (derive it)</option>
+          <option value="deriveKey" ${sel('deriveKey')}>Derive the key (stack 5ths)</option>
+          <option value="deriveChord" ${sel('deriveChord')}>Derive the chord (scored)</option>
         </select>
       </label>
       <div id="textModeControls" style="display:${isFb ? 'none' : 'contents'};">
@@ -106,8 +110,33 @@ export function renderPractice() {
     </div>
 
     <div id="fbGameArea" style="display:${isFb ? 'block' : 'none'};">
-      <div class="fretboard-wrap">
+      <div class="fretboard-wrap" id="pfbWrap">
         <div class="fretboard" id="pfbFretboard"></div>
+      </div>
+
+      <div id="deriveKeyGame" style="display:${mode === 'deriveKey' ? 'block' : 'none'};">
+        <p>Build a key the way it's actually built: <b>stack perfect 5ths</b>. Tap any note that is a 5th above the last one — root → 5th → 2nd → 6th → 3rd → 7th → ♯4th. That's the whole key, derived. ${info('Why 5ths?', `
+          <p>Keys come from the circle of fifths: each step adds one sharp. Walking 5ths from C gives C G D A E B F♯ — the 7 notes of C major, in the order they were <b>derived</b>.</p>
+        `)}</p>
+        <div class="mini-controls">
+          <button class="primary" id="dkNewQ">New question</button>
+          <button class="secondary" id="dkReveal">Reveal</button>
+          <span id="dkStats" style="font-size:13px;color:var(--muted);"></span>
+        </div>
+        <div class="fb-question" id="dkQuestion">Press "New question" to start.</div>
+      </div>
+
+      <div id="deriveChordGame" style="display:${mode === 'deriveChord' ? 'block' : 'none'};">
+        <p>Same idea as the Fretboard tab, now as scored rounds: the two tetrachords are shown, the chord name is hidden. <b>Tap the 1st + 3rd note of each half</b> to derive the chord. ${info('Derive, don\'t recall', `
+          <p>You're not guessing the name — you're stacking the 1st and 3rd of each tetrachord. Get the four tones and the chord (and its name) appear by themselves.</p>
+        `)}</p>
+        <div class="mini-controls">
+          <button class="primary" id="dcNewQ">New question</button>
+          <button class="secondary" id="dcReveal">Reveal</button>
+          <span id="dcStats" style="font-size:13px;color:var(--muted);"></span>
+        </div>
+        <div class="fb-question" id="dcQuestion">Press "New question" to start.</div>
+        <div id="dcVisual"></div>
       </div>
 
       <div id="findIntervalGame" style="display:${mode === 'findInterval' ? 'block' : 'none'};">
@@ -533,6 +562,10 @@ export function initPractice() {
   $('walkNewQ').addEventListener('click', newWalkQ);
   $('walkReplay').addEventListener('click', playWalkScale);
   $('walkReveal').addEventListener('click', revealWalk);
+  $('dkNewQ').addEventListener('click', newDkQ);
+  $('dkReveal').addEventListener('click', revealDk);
+  $('dcNewQ').addEventListener('click', newDcQ);
+  $('dcReveal').addEventListener('click', revealDc);
   $('twinNewQ').addEventListener('click', newTwinQ);
   $('twinReveal').addEventListener('click', revealTwin);
 
@@ -551,6 +584,12 @@ export function initPractice() {
   });
 
   $('level').addEventListener('change', () => { resetScore(); newQuestion(); });
+
+  // Chip taps for the "Derive the chord" game.
+  document.addEventListener('click', (e) => {
+    const chip = e.target.closest('#deriveChordGame .tetra-chip[data-tetra-step]');
+    if (chip) handleDcChip(chip);
+  });
 
   document.addEventListener('keydown', (e) => {
     const practiceTab = document.getElementById('practice');
@@ -607,7 +646,10 @@ function applyModeVisibility() {
   $('hearPlayGame').style.display = state.mode === 'hearPlay' ? 'block' : 'none';
   $('tetraGame').style.display = state.mode === 'tetraLadder' ? 'block' : 'none';
   $('walkScaleGame').style.display = state.mode === 'walkScale' ? 'block' : 'none';
+  $('deriveKeyGame').style.display = state.mode === 'deriveKey' ? 'block' : 'none';
+  $('deriveChordGame').style.display = state.mode === 'deriveChord' ? 'block' : 'none';
   $('twinGame').style.display = state.mode === 'octaveTwin' ? 'block' : 'none';
+  $('pfbWrap').style.display = state.mode === 'deriveChord' ? 'none' : '';
 }
 
 // ---- Fretboard games: find the interval / hear-and-play / octave twins / tetrachord ladder ----
@@ -618,6 +660,7 @@ function routeGameClick(cell) {
   else if (state.mode === 'octaveTwin') handleTwinClick({ target: cell });
   else if (state.mode === 'tetraLadder') handleTetraClick({ target: cell });
   else if (state.mode === 'walkScale') handleWalkClick({ target: cell });
+  else if (state.mode === 'deriveKey') handleDkClick({ target: cell });
 }
 
 function ensurePfbFretboard() {
@@ -632,15 +675,21 @@ function ensurePfbFretboard() {
   twinState.correct = 0; twinState.total = 0;
   tetraState.correct = 0; tetraState.total = 0;
   walkState.correct = 0; walkState.total = 0;
+  dkState.correct = 0; dkState.total = 0;
+  dcState.correct = 0; dcState.total = 0;
   $('fiStats').textContent = '';
   $('hpStats').textContent = '';
   $('twinStats').textContent = '';
   $('tetraStats').textContent = '';
   $('walkStats').textContent = '';
+  $('dkStats').textContent = '';
+  $('dcStats').textContent = '';
   if (state.mode === 'findInterval') newFindIntervalQ();
   else if (state.mode === 'hearPlay') newHearPlayQ();
   else if (state.mode === 'tetraLadder') newTetraQ();
   else if (state.mode === 'walkScale') newWalkQ();
+  else if (state.mode === 'deriveKey') newDkQ();
+  else if (state.mode === 'deriveChord') newDcQ();
   else newTwinQ();
 }
 
@@ -993,6 +1042,165 @@ function revealWalk() {
   const notes = walkState.targets.map(t => formatNoteForDisplay(t.pc)).join(' · ');
   $('walkQuestion').innerHTML = `<b>${walkState.name} scale</b>: ${notes} — recipe <b>${stepLetters(walkState.steps)}</b> on the ${getCurrentTuning().strings[walkState.string].name} string.`;
   $('walkStats').textContent = `Scales: ${walkState.correct}/${walkState.total}`;
+}
+
+// ---- Fretboard game: "Derive the key" (stack perfect 5ths) ----
+
+function markDkTargets() {
+  document.querySelectorAll('#pfbFretboard .fb-cell.quiz-target').forEach(c => c.classList.remove('quiz-target'));
+  if (dkState.step >= dkState.order.length) return;
+  const want = dkState.order[dkState.step];
+  document.querySelectorAll('#pfbFretboard .fb-cell').forEach(c => {
+    if (parseInt(c.dataset.pc, 10) === want) c.classList.add('quiz-target');
+  });
+}
+
+function newDkQ() {
+  const tuning = getCurrentTuning();
+  const rootPc = Math.floor(Math.random() * 12);
+  dkState.rootPc = rootPc;
+  dkState.order = [0,7,2,9,4,11,6].map(s => mod12(rootPc + s));
+  dkState.step = 0;
+  dkState.answered = false;
+  dkState.correct = dkState.correct ?? 0;
+  dkState.total = dkState.total ?? 0;
+
+  renderFretboardInto($('pfbFretboard'), {
+    tuning,
+    rootPc,
+    scale: [0],
+    showAll: false,
+    intervalOverlay: false,
+    noFlash: false,
+    delegateCellClicks: true,
+    onCellClick: (cell) => routeGameClick(cell)
+  });
+  markDkTargets();
+  $('dkQuestion').innerHTML = `Key of <b>${formatNoteForDisplay(rootPc)}</b> — stack 5ths. Tap <b>${formatNoteForDisplay(dkState.order[0])}</b> (the root).`;
+  $('dkStats').textContent = `Keys: ${dkState.correct}/${dkState.total}`;
+  playMidi(48 + rootPc, 0.7, 'guitar');
+}
+
+function handleDkClick(e) {
+  const cell = e.target.closest('.fb-cell');
+  if (!cell || dkState.answered || !dkState.order || !dkState.order.length) return;
+  const pc = parseInt(cell.dataset.pc, 10);
+  const want = dkState.order[dkState.step];
+  if (pc === want) {
+    cell.classList.add('correct-flash');
+    playMidi(parseInt(cell.dataset.midi ?? 48 + pc, 10), 0.7, 'guitar');
+    dkState.step++;
+    if (dkState.step >= dkState.order.length) {
+      dkState.answered = true;
+      dkState.total++;
+      dkState.correct++;
+      const notes = dkState.order.map(p => formatNoteForDisplay(p)).join(' · ');
+      $('dkQuestion').innerHTML = `✓ You derived the key of <b>${formatNoteForDisplay(dkState.rootPc)}</b>: ${notes} — the circle of fifths, stacked. Next one?`;
+      $('dkStats').textContent = `Keys: ${dkState.correct}/${dkState.total}`;
+      playSequence(dkState.order.map(p => 48 + p), 0.35, 'guitar');
+    } else {
+      markDkTargets();
+      $('dkQuestion').textContent = `Now a 5th above: tap ${formatNoteForDisplay(dkState.order[dkState.step])}.`;
+    }
+  } else {
+    cell.classList.add('wrong-flash');
+    setTimeout(() => cell.classList.remove('wrong-flash'), 350);
+  }
+}
+
+function revealDk() {
+  if (!dkState.order || !dkState.order.length) return;
+  dkState.answered = true;
+  dkState.total++;
+  const notes = dkState.order.map(p => formatNoteForDisplay(p)).join(' · ');
+  $('dkQuestion').innerHTML = `Key of <b>${formatNoteForDisplay(dkState.rootPc)}</b> by stacking 5ths: ${notes}.`;
+  $('dkStats').textContent = `Keys: ${dkState.correct}/${dkState.total}`;
+}
+
+// ---- Fretboard game: "Derive the chord" (scored rounds) ----
+
+function renderDcChips() {
+  const r = dcState.recipe;
+  if (!r) return;
+  const L = TETRACHORDS[r.lower];
+  const U = TETRACHORDS[r.upper];
+  const topL = L.semis[L.semis.length - 1];
+  const start = topL + r.gap;
+  const rootPc = dcState.rootPc;
+  const lowerNotes = L.semis.map(s => formatNoteForDisplay(mod12(rootPc + s)));
+  const upperNotes = U.semis.map(s => formatNoteForDisplay(mod12(rootPc + start + s)));
+  const chipRow = (notes, row) => notes.map((n, i) => {
+    const tone = i === 0 || i === 2;
+    const order = row === 'lower' ? (i === 0 ? 1 : 2) : (i === 0 ? 3 : 4);
+    return `<span class="tetra-chip ${tone ? 'tone' : 'skip'}" data-tetra-step="${tone ? order : ''}">${n}<small>${i + 1}${tone ? ' · chord' : ''}</small></span>`;
+  }).join('');
+  $('dcVisual').innerHTML = `
+    <div class="chord-visual">
+      <div class="chord-rows">
+        <div class="chord-row">${chipRow(lowerNotes, 'lower')}</div>
+        <div class="chord-gap">↓ ${r.gap === 1 ? 'half step' : 'whole step'}${r.close > 0 ? ` + W close` : ''}</div>
+        <div class="chord-row">${chipRow(upperNotes, 'upper')}</div>
+      </div>
+      <div class="chord-result">
+        <div class="chord-equals">= <b>${dcState.answered ? r.chord : '?'}</b></div>
+        <div class="muted">${dcState.answered ? [lowerNotes[0], lowerNotes[2], upperNotes[0], upperNotes[2]].join(' · ') : 'Tap the filled chips in order: lower 1 → lower 3 → upper 1 → upper 3.'}</div>
+      </div>
+    </div>
+  `;
+}
+
+function newDcQ() {
+  const recipes = TETRACHORD_SCALES.filter(r => r.chord);
+  dcState.recipe = randomChoice(recipes);
+  dcState.rootPc = Math.floor(Math.random() * 12);
+  dcState.step = 0;
+  dcState.answered = false;
+  dcState.correct = dcState.correct ?? 0;
+  dcState.total = dcState.total ?? 0;
+  const r = dcState.recipe;
+  const L = TETRACHORDS[r.lower];
+  const U = TETRACHORDS[r.upper];
+  const topL = L.semis[L.semis.length - 1];
+  const start = topL + r.gap;
+  const rootPc = dcState.rootPc;
+  const semis = L.semis.concat(U.semis.map(s => start + s));
+  if (r.close > 0) semis.push(12);
+  const chordSemis = [semis[0], semis[2], semis[4], semis[6]].filter(s => s !== undefined);
+  dcState.midis = chordSemis.map(s => 48 + mod12(rootPc + s));
+  $('dcQuestion').innerHTML = `<b>${r.name}</b> in ${formatNoteForDisplay(rootPc)} — derive the chord from the two tetrachords.`;
+  $('dcStats').textContent = `Chords: ${dcState.correct}/${dcState.total}`;
+  renderDcChips();
+}
+
+function handleDcChip(chip) {
+  if (dcState.answered || !dcState.recipe) return;
+  const want = dcState.step + 1;
+  const got = parseInt(chip.dataset.tetraStep, 10);
+  if (got === want) {
+    chip.classList.add('correct-flash');
+    dcState.step++;
+    if (dcState.step >= 4) {
+      dcState.answered = true;
+      dcState.total++;
+      dcState.correct++;
+      renderDcChips();
+      $('dcQuestion').innerHTML = `✓ ${dcState.recipe.chord} — derived from ${dcState.recipe.name}. Next one?`;
+      $('dcStats').textContent = `Chords: ${dcState.correct}/${dcState.total}`;
+      playSequence(dcState.midis, 0.45, 'guitar');
+    }
+  } else {
+    chip.classList.add('wrong-flash');
+    setTimeout(() => chip.classList.remove('wrong-flash'), 350);
+  }
+}
+
+function revealDc() {
+  if (!dcState.recipe) return;
+  dcState.answered = true;
+  dcState.total++;
+  renderDcChips();
+  $('dcQuestion').innerHTML = `<b>${dcState.recipe.chord}</b> — the 1st + 3rd of each tetrachord in ${dcState.recipe.name}.`;
+  $('dcStats').textContent = `Chords: ${dcState.correct}/${dcState.total}`;
 }
 
 // ---- Fretboard game: "Find its octave twin" (timed) ----

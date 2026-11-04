@@ -659,3 +659,14 @@ body[data-nav-pos="right"] .nav-brand {
 .heat-cell[style*="--heat:0"] { background: transparent; }
 .heat-label { font-weight: 700; }
 .heat-pct { font-size: 12px; color: var(--muted); }
+
+/* ---- Reference "Test me" derive mode ---- */
+.derive-mode table td:first-child,
+.derive-mode table td:nth-child(3) {
+  filter: blur(5px);
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+.derive-mode table td.revealed {
+  filter: none;
+}
