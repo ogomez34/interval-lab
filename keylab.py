@@ -20,6 +20,7 @@ from engine import (
     TUNINGS, MAJOR_SCALE_SEMIS, NATURAL_MINOR_SEMIS, FIFTHS_ORDER,
     mod12, note, parse_note, parse_key, semis_from_steps,
     scale_semis_from_tetrachords, steps_of_semis, step_letters, key_scale_semis,
+    key_data, scale_data, chord_data, tetrachord_data,
 )
 # ---------------------------------------------------------------- fretboard
 
@@ -55,16 +56,17 @@ def fretboard(pcs=None, root_pc=0, tuning_key='standard', label='notes'):
 # ---------------------------------------------------------------- sheets
 
 def sheet_tetra(root_text, tetra_key, tuning_key='standard'):
-    root = parse_note(root_text)
+    td = tetrachord_data(root_text, tetra_key)
+    root = td['root']
     t = TETRACHORDS[tetra_key]
-    semis = t['semis']
-    notes = [note(root + s) for s in semis]
+    semis = td['semis']
+    notes = td['notes']
     top = semis[-1]
 
-    out = [f"TETRACHORD — {t['name']} from {note(root)}", '=' * 52]
+    out = [f"TETRACHORD — {td['name']} from {note(root)}", '=' * 52]
     out.append(f"Notes : {'  '.join(notes)}")
-    out.append(f"Steps : {t['steps']}   (frets {' – '.join(str(s) for s in semis)})")
-    out.append(f"Span  : {t['span']}. {t['feel']}.")
+    out.append(f"Steps : {td['steps']}   (frets {' – '.join(str(s) for s in semis)})")
+    out.append(f"Span  : {td['span']}. {td['feel']}.")
 
     # one-string ladder
     out.append('')
@@ -123,22 +125,14 @@ def sheet_tetra(root_text, tetra_key, tuning_key='standard'):
     return '\n'.join(out)
 
 def sheet_scale(root_text, scale_name, tuning_key='standard'):
-    root = parse_note(root_text)
-    row = None
-    for r in TETRACHORD_SCALES:
-        if r[0].lower().startswith(scale_name.lower()):
-            row = r
-            break
-    if row is None:
-        return f"Unknown scale '{scale_name}'. Known: " + ', '.join(r[0] for r in TETRACHORD_SCALES)
-
-    name, lower, upper, gap, close, chord = row
-    semis = scale_semis_from_tetrachords(row)
-    pcs = [mod12(root + s) for s in semis if s < 12]
-    notes = [note(root + s) for s in semis]
-    steps = steps_of_semis(semis)
+    try:
+        s = scale_data(root_text, scale_name)
+    except ValueError as exc:
+        return str(exc)
+    root = s['root']
+    name, lower, upper, gap, close, chord = s['recipe']
+    pcs, notes, steps = s['pcs'], s['notes'], s['steps']
     gap_label = {1: 'H', 2: 'W'}.get(gap, str(gap))
-    close_label = f' + {step_letters([close])} close' if close else ''
 
     out = [f"SCALE — {name} in {note(root)}", '=' * 52]
     out.append(f"Notes : {'  '.join(notes)}")
@@ -161,30 +155,20 @@ def sheet_scale(root_text, scale_name, tuning_key='standard'):
     return '\n'.join(out)
 
 def sheet_chord(root_text, chord_text, tuning_key='standard'):
-    root = parse_note(root_text)
-    ctype = CHORD_ALIASES.get(chord_text.strip(), chord_text.strip().lower())
-    if ctype not in CHORDS:
-        return f"Unknown chord '{chord_text}'. Known: " + ', '.join(sorted(set(CHORDS)))
-    intervals = CHORDS[ctype]
-    notes = [note(root + s) for s in intervals]
+    try:
+        c = chord_data(root_text, chord_text)
+    except ValueError as exc:
+        return str(exc)
+    root, ctype = c['root'], c['type']
+    intervals, notes = c['intervals'], c['notes']
 
     out = [f"CHORD — {note(root)}{ctype}  (intervals {' – '.join(str(s) for s in intervals)})", '=' * 52]
     out.append(f"Notes : {'  '.join(notes)}")
     out.append('')
 
     # which tetrachord scale does it live in?
-    found = None
-    for r in TETRACHORD_SCALES:
-        if r[5] == ctype:
-            found = r
-            break
-    if found:
-        name, lower, upper, gap, close, chord = found
-        L, U = TETRACHORDS[lower], TETRACHORDS[upper]
-        top_l = L['semis'][-1]
-        start = top_l + gap
-        # find a root where this chord is the I chord
-        semis = scale_semis_from_tetrachords(found)
+    if c['home'] is not None:
+        name, lower, upper, gap, close, chord = c['home']['recipe']
         gap_label = {1: 'H', 2: 'W'}.get(gap, str(gap))
         out.append('IT LIVES IN (derive it backwards):')
         out.append(f"  {name}:  {TETRACHORDS[lower]['name']} + {gap_label} + {TETRACHORDS[upper]['name']}")
@@ -200,21 +184,16 @@ def sheet_chord(root_text, chord_text, tuning_key='standard'):
     return '\n'.join(out)
 
 def sheet_key(key_text, tuning_key='standard'):
-    root, mode = parse_key(key_text)
-    semis = key_scale_semis(root, mode)
-    pcs = [mod12(root + s) for s in semis]
-    notes = [note(pc) for pc in pcs]
+    k = key_data(key_text)
+    root, mode = k['root'], k['mode']
+    pcs, notes = k['pcs'], k['notes']
 
     out = [f"KEY — {note(root)} {mode}", '=' * 52]
     out.append(f"Notes : {'  '.join(notes)}")
     out.append('')
 
     # 1) tetrachords first — the centre
-    if mode == 'major':
-        row = TETRACHORD_SCALES[0]   # Major (Ionian)
-    else:
-        row = TETRACHORD_SCALES[1]   # Natural minor
-    name, lower, upper, gap, close, chord = row
+    name, lower, upper, gap, close, chord = k['recipe']
     L, U = TETRACHORDS[lower], TETRACHORDS[upper]
     top_l = L['semis'][-1]
     start = top_l + gap
@@ -229,26 +208,21 @@ def sheet_key(key_text, tuning_key='standard'):
     out.append('')
 
     # 2) step recipe
-    steps = steps_of_semis(semis + [12])
     out.append('2) STEP RECIPE (walk it)')
-    out.append(f"   {step_letters(steps)}   — start on {note(root)} and walk it; you just derived the scale.")
+    out.append(f"   {step_letters(k['steps'])}   — start on {note(root)} and walk it; you just derived the scale.")
     out.append('')
 
     # 3) stack fifths (minor keys derive from their relative major)
+    fifths = [note(p) for p in k['fifths']]
     fifth_root = root + 3 if mode == 'minor' else root
-    fifths = [note(fifth_root + s) for s in FIFTHS_ORDER]
     out.append('3) STACK FIFTHS (the circle)')
     out.append(f"   {' '.join(fifths)}" + (f"   (from relative major {note(fifth_root)})" if mode == 'minor' else ''))
     out.append('')
 
     # 4) chords of the key
-    if mode == 'major':
-        qualities = ['maj7', 'm7', 'm7', 'maj7', '7', 'm7', 'm7b5']
-    else:
-        qualities = ['m7', 'm7b5', 'maj7', 'm7', 'm7', 'maj7', '7']
     out.append('4) CHORDS OF THE KEY (1st + 3rd of each half)')
-    for i, (s, q) in enumerate(zip(semis, qualities), 1):
-        out.append(f"   {i:<2} {note(root + s):<3} {q}")
+    for c in k['chords']:
+        out.append(f"   {c['degree']:<2} {note(c['pc']):<3} {c['quality']}")
     out.append('')
 
     # 5) fretboard

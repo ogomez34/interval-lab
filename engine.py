@@ -133,3 +133,152 @@ def step_letters(steps):
 def key_scale_semis(root, mode):
     return list(MAJOR_SCALE_SEMIS if mode == 'major' else NATURAL_MINOR_SEMIS)
 
+
+# ---------------------------------------------------------------- concepts
+
+def derive_key_by_fifths(root, mode='major'):
+    """The key's notes in circle-of-fifths (sharps-in-order) sequence."""
+    fifth_root = root + 3 if mode == 'minor' else root
+    return [mod12(fifth_root + s) for s in FIFTHS_ORDER]
+
+
+def derive_scale_by_tetrachords(lower_key, upper_key, gap=2, close=0):
+    """lower tetrachord + gap + upper tetrachord (+ close) = scale semis."""
+    L = TETRACHORDS[lower_key]['semis']
+    U = TETRACHORDS[upper_key]['semis']
+    start = L[-1] + gap
+    semis = list(L) + [start + s for s in U]
+    if close > 0:
+        semis.append(12)
+    return semis
+
+
+def derive_chord_from_tetrachords(scale_semis):
+    """The 7th chord inside a scale: 1st + 3rd note of each tetrachord."""
+    return [scale_semis[i] for i in (0, 2, 4, 6) if i < len(scale_semis)]
+
+
+def derive_scale_from_chord(root, chord_type):
+    """Run chord-scales backwards: which tetrachord recipe is this chord in?"""
+    ctype = CHORD_ALIASES.get(chord_type, chord_type)
+    recipe = next((r for r in TETRACHORD_SCALES if r[5] == ctype), None)
+    if recipe is None:
+        return None
+    semis = scale_semis_from_tetrachords(recipe)
+    chord_intervals = CHORDS[ctype]
+    fill = [s for s in semis if s not in chord_intervals]
+    return {
+        'recipe': recipe,
+        'semis': semis,
+        'fill_semis': fill,
+        'root': mod12(root),
+    }
+
+
+def key_data(root_or_text, mode=None):
+    """Everything about a key, derived. Returns a dict, never prints."""
+    if mode is None:
+        root, mode = parse_key(root_or_text)
+    else:
+        root = parse_note(root_or_text) if isinstance(root_or_text, str) else root_or_text
+    semis = key_scale_semis(root, mode)
+    pcs = [mod12(root + s) for s in semis]
+    recipe = TETRACHORD_SCALES[0] if mode == 'major' else TETRACHORD_SCALES[1]
+    qualities = (['maj7', 'm7', 'm7', 'maj7', '7', 'm7', 'm7b5'] if mode == 'major'
+                 else ['m7', 'm7b5', 'maj7', 'm7', 'm7', 'maj7', '7'])
+    return {
+        'root': root,
+        'mode': mode,
+        'notes': [note(p) for p in pcs],
+        'semis': semis,
+        'pcs': pcs,
+        'steps': steps_of_semis(semis + [12]),
+        'recipe': recipe,
+        'fifths': derive_key_by_fifths(root, mode),
+        'chords': [{'degree': i + 1, 'pc': mod12(root + s), 'quality': q}
+                   for i, (s, q) in enumerate(zip(semis, qualities))],
+    }
+
+
+def scale_data(root_or_text, name):
+    """A scale, derived from its tetrachord recipe. Returns a dict."""
+    root = parse_note(root_or_text)
+    row = next((r for r in TETRACHORD_SCALES if r[0].lower().startswith(name.lower())), None)
+    if row is None:
+        raise ValueError(f"Unknown scale '{name}'. Known: " + ', '.join(r[0] for r in TETRACHORD_SCALES))
+    semis = scale_semis_from_tetrachords(row)
+    chord_semis = derive_chord_from_tetrachords(semis)
+    return {
+        'root': root,
+        'name': row[0],
+        'recipe': row,
+        'semis': semis,
+        'notes': [note(root + s) for s in semis],
+        'pcs': [mod12(root + s) for s in semis if s < 12],
+        'steps': steps_of_semis(semis),
+        'chord_type': row[5],
+        'chord_semis': chord_semis,
+        'chord_notes': [note(root + s) for s in chord_semis],
+    }
+
+
+def chord_data(root_or_text, chord_text):
+    """A chord: intervals, notes, and the tetrachord scale it lives in."""
+    root = parse_note(root_or_text)
+    ctype = CHORD_ALIASES.get(chord_text.strip(), chord_text.strip().lower())
+    if ctype not in CHORDS:
+        raise ValueError(f"Unknown chord '{chord_text}'. Known: " + ', '.join(sorted(set(CHORDS))))
+    intervals = CHORDS[ctype]
+    return {
+        'root': root,
+        'type': ctype,
+        'intervals': intervals,
+        'notes': [note(root + s) for s in intervals],
+        'pcs': [mod12(root + s) for s in intervals],
+        'home': derive_scale_from_chord(root, ctype),
+    }
+
+
+def tetrachord_data(root_or_text, tetra_key):
+    """One tetrachord: notes, steps, and every scale it builds."""
+    root = parse_note(root_or_text)
+    t = TETRACHORDS[tetra_key]
+    builds = [
+        {
+            'scale': r[0],
+            'side': 'lower' if r[1] == tetra_key else 'upper',
+            'lower': r[1],
+            'upper': r[2],
+            'gap': r[3],
+            'close': r[4],
+        }
+        for r in TETRACHORD_SCALES if tetra_key in (r[1], r[2])
+    ]
+    return {
+        'root': root,
+        'key': tetra_key,
+        'name': t['name'],
+        'semis': t['semis'],
+        'notes': [note(root + s) for s in t['semis']],
+        'steps': t['steps'],
+        'span': t['span'],
+        'feel': t['feel'],
+        'builds': builds,
+    }
+
+
+def fretboard_positions(tuning_key='standard', pcs=None):
+    """Every cell of a 13-fret board: (string, fret, pc, in_scale). High string first."""
+    label, midis, names = TUNINGS[tuning_key]
+    cells = []
+    for si in range(len(midis) - 1, -1, -1):
+        for f in range(13):
+            pc = mod12(midis[si] + f)
+            cells.append({
+                'string': si,
+                'name': names[si],
+                'fret': f,
+                'pc': pc,
+                'in_scale': pcs is None or pc in pcs,
+            })
+    return cells
