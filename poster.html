@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interval Lab — A4 practice poster</title>
+<style>
+  :root {
+    --ink: #232126;
+    --muted: #6d6860;
+    --paper: #ffffff;
+    --accent: #d97b1f;
+    --accent-bg: #fdf0e0;
+    --accent-line: #eec38c;
+    --perfect: #2f7d4f;
+    --perfect-bg: #e5f3ea;
+    --imperfect: #a56e0a;
+    --imperfect-bg: #fbf2da;
+    --dissonant: #c14a3a;
+    --dissonant-bg: #fbe9e4;
+    --wire: #d9d4cb;
+    --zebra: #f7f5f0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { background: #e9e7e2; }
+  body {
+    font-family: "Helvetica Neue", "Avenir Next", Arial, sans-serif;
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 0 24px;
+  }
+  .screen-note {
+    max-width: 210mm;
+    width: 210mm;
+    font-size: 11px;
+    color: #555;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  .poster {
+    width: 210mm;
+    height: 297mm;
+    background: var(--paper);
+    padding: 6mm 7mm 5mm;
+    display: flex;
+    flex-direction: column;
+    gap: 2.6mm;
+    overflow: hidden;
+    box-shadow: 0 2px 14px rgba(0,0,0,.25);
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* ---------- header ---------- */
+  .head { display: flex; align-items: baseline; justify-content: space-between; }
+  .head h1 { font-size: 20pt; letter-spacing: .12em; font-weight: 800; }
+  .head h1 .accent { color: var(--accent); }
+  .head .sub { font-size: 9.5pt; color: var(--muted); font-weight: 600; }
+
+  .idea {
+    background: var(--accent-bg);
+    border: 0.4mm solid var(--accent-line);
+    border-radius: 1.2mm;
+    padding: 1.7mm 3mm;
+    font-size: 9.3pt;
+    font-weight: 700;
+    text-align: center;
+  }
+  .idea .dim { color: var(--muted); font-weight: 600; }
+
+  /* ---------- method ---------- */
+  .method { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2mm; }
+  .step { border: 0.3mm solid var(--wire); border-radius: 1.2mm; padding: 1.4mm 2mm; font-size: 7pt; line-height: 1.2; }
+  .step .n {
+    display: inline-block;
+    width: 4.4mm; height: 4.4mm; line-height: 4.4mm;
+    text-align: center; border-radius: 50%;
+    background: var(--ink); color: #fff;
+    font-size: 7.6pt; font-weight: 800; margin-right: 1.1mm;
+  }
+  .step b { font-size: 7.8pt; letter-spacing: .05em; }
+  .step .d { color: var(--muted); display: block; margin-top: .7mm; }
+
+  .sect { font-size: 8.5pt; font-weight: 800; letter-spacing: .16em; color: var(--accent); display: flex; align-items: center; gap: 2mm; }
+  .sect::after { content: ""; flex: 1; border-top: 0.3mm solid var(--wire); }
+
+  /* ---------- compact 12-distance chips ---------- */
+  .int-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5mm; }
+  .int {
+    border: 0.3mm solid var(--wire);
+    border-left: 1.2mm solid;
+    border-radius: .8mm;
+    padding: 1mm 1.6mm;
+    font-size: 7.2pt;
+    line-height: 1.18;
+    display: flex;
+    align-items: center;
+    gap: 1.6mm;
+  }
+  .int .f { font-weight: 800; font-size: 9pt; min-width: 5mm; }
+  .int .sym { font-weight: 800; font-size: 8.4pt; min-width: 6.5mm; }
+  .int .nm { font-weight: 600; }
+  .int-perfect   { border-left-color: var(--perfect); }
+  .int-imperfect { border-left-color: var(--imperfect); }
+  .int-dissonant { border-left-color: var(--dissonant); }
+  .int-wide { grid-column: 1 / -1; }
+
+  /* ---------- guitar trick mini diagrams ---------- */
+  .trick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.8mm; }
+  .trick { text-align: center; }
+  .trick svg { width: 100%; height: auto; display: block; }
+  .trick .cap { font-size: 6.4pt; font-weight: 700; margin-top: .7mm; line-height: 1.25; }
+  .trick-note { margin-top: 1.4mm; font-size: 6.8pt; color: var(--muted); }
+  .trick-note b { color: var(--ink); }
+
+  /* ---------- bottom grid ---------- */
+  .cols { display: grid; grid-template-columns: 0.92fr 1.5fr; gap: 2.6mm; flex: 1; min-height: 0; }
+  .card {
+    border: 0.3mm solid var(--wire);
+    border-radius: 1.2mm;
+    padding: 2mm 2.4mm;
+    font-size: 7.2pt;
+    line-height: 1.28;
+  }
+  .card h3 { font-size: 8pt; letter-spacing: .12em; margin-bottom: 1.4mm; }
+  .card ul { list-style: none; }
+  .card li { margin-bottom: 1.3mm; }
+  .card .tag {
+    display: inline-block;
+    font-weight: 800;
+    font-size: 6.4pt;
+    letter-spacing: .06em;
+    padding: .3mm 1.4mm;
+    border-radius: 2mm;
+    margin-right: 1mm;
+  }
+  .card .steps { font-family: "SF Mono", Menlo, Consolas, monospace; font-weight: 700; font-size: 7.4pt; }
+
+  .leftcol { display: flex; flex-direction: column; gap: 2.6mm; min-height: 0; }
+  .leftcol .card { flex: 1; }
+
+  .chain { counter-reset: c; display: grid; grid-template-columns: 1fr 1fr; column-gap: 2.6mm; row-gap: 1.2mm; }
+  .chain li { position: relative; padding-left: 5.6mm; }
+  .chain li::before {
+    counter-increment: c;
+    content: counter(c);
+    position: absolute; left: 0; top: 0;
+    width: 3.4mm; height: 3.4mm; line-height: 3.4mm;
+    text-align: center; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    font-size: 6.4pt; font-weight: 800;
+  }
+
+  .fifths { width: 100%; border-collapse: collapse; font-size: 7.4pt; text-align: center; }
+  .fifths td { border: 0.3mm solid var(--wire); padding: 1.1mm .5mm; }
+  .fifths .maj { font-weight: 800; font-size: 8pt; }
+  .fifths .min { display: block; color: var(--muted); font-size: 6.6pt; margin-top: .4mm; }
+  .fifths-cap { margin-top: 1.4mm; font-size: 6.6pt; color: var(--muted); text-align: center; line-height: 1.3; }
+  .fifths-cap b { color: var(--ink); }
+
+  .rightcol { display: flex; flex-direction: column; gap: 2.6mm; min-height: 0; }
+  .rightcol .card { flex: 1; }
+
+  /* ---------- tetrachord diagrams ---------- */
+  .tetra-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.6mm; }
+  .tetra { text-align: center; }
+  .tetra svg { width: 100%; height: auto; display: block; }
+  .tetra .cap { font-size: 6.6pt; font-weight: 800; letter-spacing: .03em; margin-top: .8mm; }
+  .tetra .cap .steps { color: var(--muted); font-weight: 700; }
+  .tetra-bonus { margin-top: 1.4mm; font-size: 6.8pt; color: var(--muted); text-align: center; }
+  .tetra-bonus b { color: var(--ink); }
+  .tetra-note { margin-top: 1.2mm; font-size: 6.8pt; text-align: center; background: var(--zebra); border-radius: .8mm; padding: .8mm 2mm; }
+
+  /* ---------- scales table ---------- */
+  table.scales { width: 100%; border-collapse: collapse; font-size: 6.9pt; }
+  table.scales th {
+    text-align: left;
+    font-size: 6.2pt; letter-spacing: .09em; color: var(--muted);
+    padding: 0 1.2mm .7mm;
+    border-bottom: 0.4mm solid var(--ink);
+  }
+  table.scales td { padding: 0 1.2mm; height: 4.9mm; vertical-align: middle; }
+  table.scales tbody tr:nth-child(even) { background: var(--zebra); }
+  table.scales .sc { font-weight: 700; }
+  table.scales .tet { font-weight: 700; color: var(--accent); }
+  table.scales .gap { font-family: "SF Mono", Menlo, Consolas, monospace; font-weight: 700; text-align: center; }
+  table.scales .ch { font-family: "SF Mono", Menlo, Consolas, monospace; font-weight: 700; }
+  table.scales .notes { color: var(--muted); font-size: 6.3pt; }
+
+  /* ---------- chords ---------- */
+  .chord-recipes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4mm; margin-top: 1.2mm; }
+  .ch {
+    border: 0.3mm solid var(--wire); border-radius: .8mm;
+    padding: 1mm 1.4mm; font-size: 6.6pt; line-height: 1.25;
+  }
+  .ch .name { font-weight: 800; font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 7.2pt; }
+  .ch .rec { font-family: "SF Mono", Menlo, Consolas, monospace; font-weight: 700; color: var(--accent); }
+  .ch .src { color: var(--muted); }
+  .chords-more { margin-top: 1.2mm; font-size: 6.8pt; color: var(--muted); }
+  .chords-more b { color: var(--ink); }
+
+  /* ---------- footer ---------- */
+  .foot {
+    border-top: 0.4mm solid var(--ink);
+    padding-top: 1.5mm;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 7.4pt;
+  }
+  .foot .try { font-weight: 800; }
+  .foot .try .mono { font-family: "SF Mono", Menlo, Consolas, monospace; color: var(--accent); }
+  .foot .src { color: var(--muted); font-size: 6.6pt; text-align: right; }
+
+  /* ---------- page 2: fretboard shapes ---------- */
+  .page1 { break-after: page; page-break-after: always; }
+
+  .p2-note { text-align: center; font-size: 7pt; color: var(--muted); }
+  .p2-note b { color: var(--ink); }
+
+  .mini-row-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1.8mm; }
+  .mini-row-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2mm; }
+  .mini { text-align: center; }
+  .mini svg { width: 100%; height: auto; display: block; }
+  .mini .cap { font-size: 6.6pt; font-weight: 800; margin-top: .8mm; line-height: 1.25; }
+  .mini .cap .steps { color: var(--muted); font-weight: 700; }
+  .mini .sub { font-size: 6pt; color: var(--muted); margin-top: .4mm; }
+
+  .scale-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.8mm 2mm; }
+  .scale-cell { text-align: center; }
+  .scale-cell svg { width: 100%; height: auto; display: block; }
+  .scale-cell .cap { font-size: 6.6pt; font-weight: 800; margin-top: .8mm; line-height: 1.25; }
+  .scale-cell .cap .rec { color: var(--muted); font-weight: 600; display: block; font-size: 6pt; }
+
+  .chord-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1.8mm; }
+  .chord { text-align: center; }
+  .chord svg { width: 100%; height: auto; display: block; }
+  .chord .cap { font-size: 6.6pt; font-weight: 800; margin-top: .8mm; line-height: 1.25; }
+  .chord .cap .rec { color: var(--accent); }
+  .chord .sub { font-size: 6pt; color: var(--muted); margin-top: .4mm; }
+
+  .legend { text-align: center; font-size: 6.6pt; color: var(--muted); margin-top: 1.2mm; }
+  .legend b { color: var(--ink); }
+  .p2-tips { display: grid; grid-template-columns: 1fr 1fr; gap: 2mm; }
+  .tip { background: var(--zebra); border: 0.3mm solid var(--wire); border-radius: 1mm; padding: 1.4mm 2.4mm; font-size: 7pt; text-align: center; }
+  .tip b { color: var(--accent); }
+
+
+  /* ---------- page 3: fretboard maps ---------- */
+  .page2 { break-after: page; page-break-after: always; }
+
+  .tune-head { display: flex; align-items: baseline; justify-content: space-between; margin: .5mm 0 .5mm; }
+  .tune-head h3 { font-size: 12pt; letter-spacing: .08em; }
+  .tune-head .spec { font-size: 7.6pt; color: var(--muted); font-weight: 700; }
+  .tune-head .spec .m3 { color: var(--dissonant); }
+
+  .board-grid { display: grid; grid-template-columns: 12mm repeat(13, 1fr); grid-template-rows: auto auto repeat(6, auto); row-gap: 3.8mm; align-items: stretch; }
+  .b-label { display: flex; align-items: center; justify-content: center; font-size: 5.8pt; font-weight: 800; color: var(--muted); letter-spacing: .08em; background: var(--zebra); border: .3mm solid var(--wire); border-right: none; border-radius: 1mm 0 0 1mm; }
+  .ruler-cell { border: .3mm solid var(--wire); border-left: none; text-align: center; padding: 1.1mm 0 .9mm; font-weight: 800; font-size: 7.4pt; }
+  .ruler-perfect { background: var(--perfect-bg); color: var(--perfect); }
+  .ruler-imperfect { background: var(--imperfect-bg); color: var(--imperfect); }
+  .ruler-dissonant { background: var(--dissonant-bg); color: var(--dissonant); }
+  .fret-num { border: .3mm solid var(--wire); border-left: none; border-top: none; text-align: center; font-size: 7.6pt; font-weight: 700; color: var(--muted); padding: .5mm 0; background: #fff; }
+  .fret-num .dot { color: var(--accent); font-size: 6.4pt; }
+  .str-name { position: relative; display: flex; align-items: center; justify-content: center; font-size: 9pt; font-weight: 800; background: var(--zebra); border: .3mm solid var(--wire); border-right: none; border-radius: 1mm 0 0 1mm; }
+  .str-name::after { content: attr(data-pair); position: absolute; bottom: -3.4mm; left: 50%; transform: translateX(-50%); font-size: 5.8pt; font-weight: 800; color: #b06a12; background: #fff; border: .3mm solid var(--wire); border-radius: 2mm; padding: .25mm 1.2mm; z-index: 3; line-height: 1.15; }
+  .str-name.m3::after { color: var(--dissonant); border-color: var(--dissonant); }
+  .str-name:last-child::after { content: none; }
+  .note-cell { border: .3mm solid var(--wire); border-left: none; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.7mm 0; }
+  .note-cell.nat { background: #fff; }
+  .note-cell.acc { background: var(--accent-bg); }
+  .note-cell.oct { background: var(--perfect-bg); }
+  .note-cell .note { font-weight: 800; font-size: 9.8pt; line-height: 1; }
+  .note-cell.nat .note { color: var(--ink); }
+  .note-cell.acc .note { color: var(--accent); }
+  .note-cell.oct .note { color: var(--perfect); }
+  .note-cell .iv { font-size: 6.6pt; color: #5f5a52; margin-top: 1mm; line-height: 1; }
+  .p3-legend { text-align: center; font-size: 7.4pt; color: var(--muted); line-height: 1.35; }
+  .p3-legend b { color: var(--ink); }
+  .p3-tips { display: grid; grid-template-columns: 1fr 1fr; gap: 1.8mm; }
+  .tip3 { background: var(--zebra); border: .3mm solid var(--wire); border-radius: 1mm; padding: 1.6mm 2.4mm; font-size: 7.6pt; line-height: 1.32; }
+  .tip3 b { color: var(--accent); }
+
+  @page { size: A4 portrait; margin: 0; }
+  @media print {
+    html, body { background: #fff; padding: 0; margin: 0; }
+    .screen-note { display: none; }
+    .poster { box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+<div class="screen-note">Print to A4 with margins set to “None” and “Background graphics” ON. (A ready-made PDF: poster.pdf)</div>
+
+<div class="poster page1">
+
+  <div class="head">
+    <h1>INTERVAL <span class="accent">LAB</span></h1>
+    <span class="sub">The 12 distances · practice poster</span>
+  </div>
+
+  <div class="idea">Everything in music is a <b>distance</b>. On the guitar, distance is <b>frets</b> — <span class="dim">1 fret = 1 semitone. Learn the 12 distances and the whole instrument unlocks.</span></div>
+
+  <div class="method">
+    <div class="step"><span class="n">1</span><b>HEAR</b><span class="d">Ear tab: name the distance. Hook it to its song.</span></div>
+    <div class="step"><span class="n">2</span><b>SING</b><span class="d">Sing it back first — your voice is the most honest tuner.</span></div>
+    <div class="step"><span class="n">3</span><b>FIND</b><span class="d">Read the neck like a ruler; hunt intervals against the drone.</span></div>
+    <div class="step"><span class="n">4</span><b>PLAY</b><span class="d">Practice games: find every ♭3 from a root, play what you hear.</span></div>
+  </div>
+
+  <div class="sect">THE 12 DISTANCES</div>
+  <div class="int-grid">
+    <div class="int int-perfect"><span class="f">0</span><span class="sym">R</span><span class="nm">unison</span></div>
+    <div class="int int-dissonant"><span class="f">1</span><span class="sym">♭2</span><span class="nm">minor 2nd</span></div>
+    <div class="int int-dissonant"><span class="f">2</span><span class="sym">2</span><span class="nm">major 2nd</span></div>
+    <div class="int int-imperfect"><span class="f">3</span><span class="sym">♭3</span><span class="nm">minor 3rd</span></div>
+    <div class="int int-imperfect"><span class="f">4</span><span class="sym">3</span><span class="nm">major 3rd</span></div>
+    <div class="int int-perfect"><span class="f">5</span><span class="sym">4</span><span class="nm">perfect 4th</span></div>
+    <div class="int int-dissonant"><span class="f">6</span><span class="sym">♭5</span><span class="nm">tritone</span></div>
+    <div class="int int-perfect"><span class="f">7</span><span class="sym">5</span><span class="nm">perfect 5th</span></div>
+    <div class="int int-imperfect"><span class="f">8</span><span class="sym">♭6</span><span class="nm">minor 6th</span></div>
+    <div class="int int-imperfect"><span class="f">9</span><span class="sym">6</span><span class="nm">major 6th</span></div>
+    <div class="int int-dissonant"><span class="f">10</span><span class="sym">♭7</span><span class="nm">minor 7th</span></div>
+    <div class="int int-dissonant"><span class="f">11</span><span class="sym">7</span><span class="nm">major 7th</span></div>
+    <div class="int int-perfect int-wide"><span class="f">12</span><span class="sym">P8</span><span class="nm">octave — the same note, one register up · <b>the neck repeats every 12 frets</b></span></div>
+  </div>
+
+  <div class="cols">
+
+    <!-- ============ LEFT ============ -->
+    <div class="leftcol">
+
+      <div class="card">
+        <h3>THE 3 FAMILIES</h3>
+        <ul>
+          <li><span class="tag chip-perfect">PERFECT</span><br>unison · 4th · 5th · octave — <b>hollow, strong, stable.</b> The frame of the building.</li>
+          <li><span class="tag chip-imperfect">IMPERFECT</span><br>3rds · 6ths — <b>the colours.</b> Major = bright, minor = dark. They make chords happy or sad.</li>
+          <li><span class="tag chip-dissonant">DISSONANT</span><br>2nds · 7ths · tritone — <b>tension that wants to resolve.</b> Melodies and blues live here.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>DERIVE — DON’T MEMORISE</h3>
+        <ul class="chain">
+          <li><b>Pick 1</b> — any note, any string. “1” is home.</li>
+          <li><b>Count steps</b> → intervals (3 frets = ♭3).</li>
+          <li><b>4 notes spanning a 4th</b> → a tetrachord.</li>
+          <li><b>Lower + gap + upper</b> → a scale. No table needed.</li>
+          <li><b>1st + 3rd note of each half</b> → the 7th chord inside the scale.</li>
+          <li><b>Stack 5ths</b> → the circle of fifths, keys, everything.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>THE GUITAR TRICK · TWO MAGIC SHAPES</h3>
+        <div class="trick-grid">
+          <div class="trick">
+            <svg viewBox="0 0 120 62" xmlns="http://www.w3.org/2000/svg">
+              <line x1="6" y1="18" x2="114" y2="18" stroke="#b9b3a8" stroke-width="1.6"/>
+              <line x1="6" y1="46" x2="114" y2="46" stroke="#6d6860" stroke-width="3"/>
+              <line x1="16" y1="10" x2="16" y2="54" stroke="#6d6860" stroke-width="3"/>
+              <line x1="57" y1="10" x2="57" y2="54" stroke="#c9c3b8" stroke-width="1.4"/>
+              <line x1="98" y1="10" x2="98" y2="54" stroke="#c9c3b8" stroke-width="1.4"/>
+              <line x1="16" y1="26" x2="16" y2="38" stroke="#b9b3a8" stroke-width="1.2" stroke-dasharray="3 3"/>
+              <circle cx="16" cy="46" r="7.6" fill="#232126"/>
+              <circle cx="16" cy="18" r="7.6" fill="#d97b1f"/>
+              <g font-family="Helvetica Neue, Arial, sans-serif" font-size="9.5" font-weight="bold" fill="#fff" text-anchor="middle">
+                <text x="16" y="49.5">1</text>
+                <text x="16" y="21.5">4</text>
+              </g>
+            </svg>
+            <div class="cap">Tetrachord: the <b>4</b> sits right above <b>1</b> — same fret, next string</div>
+          </div>
+          <div class="trick">
+            <svg viewBox="0 0 120 62" xmlns="http://www.w3.org/2000/svg">
+              <line x1="6" y1="18" x2="114" y2="18" stroke="#b9b3a8" stroke-width="1.6"/>
+              <line x1="6" y1="46" x2="114" y2="46" stroke="#6d6860" stroke-width="3"/>
+              <line x1="16" y1="10" x2="16" y2="54" stroke="#6d6860" stroke-width="3"/>
+              <line x1="57" y1="10" x2="57" y2="54" stroke="#c9c3b8" stroke-width="1.4"/>
+              <line x1="98" y1="10" x2="98" y2="54" stroke="#c9c3b8" stroke-width="1.4"/>
+              <line x1="22" y1="41" x2="90" y2="24" stroke="#b9b3a8" stroke-width="1.2" stroke-dasharray="3 3"/>
+              <circle cx="16" cy="46" r="7.6" fill="#232126"/>
+              <circle cx="98" cy="18" r="7.6" fill="#2f7d4f"/>
+              <g font-family="Helvetica Neue, Arial, sans-serif" font-size="9.5" font-weight="bold" fill="#fff" text-anchor="middle">
+                <text x="16" y="49.5">1</text>
+                <text x="98" y="21.5">8</text>
+              </g>
+            </svg>
+            <div class="cap">Octave: the <b>8</b> is 2 strings up + <b>2 frets</b></div>
+          </div>
+        </div>
+        <div class="trick-note"><b>Across the G→B pair add 1 fret</b> — those two strings are a major 3rd apart, not a perfect 4th. Everything else on the neck is a perfect 4th.</div>
+      </div>
+
+      <div class="card">
+        <h3>CIRCLE OF 5THS · STACK THEM UP</h3>
+        <table class="fifths">
+          <tr>
+            <td><span class="maj">C</span><span class="min">Am</span></td>
+            <td><span class="maj">G</span><span class="min">Em</span></td>
+            <td><span class="maj">D</span><span class="min">Bm</span></td>
+            <td><span class="maj">A</span><span class="min">F♯m</span></td>
+            <td><span class="maj">E</span><span class="min">C♯m</span></td>
+            <td><span class="maj">B</span><span class="min">G♯m</span></td>
+          </tr>
+          <tr>
+            <td><span class="maj">F♯</span><span class="min">E♭m</span></td>
+            <td><span class="maj">D♭</span><span class="min">B♭m</span></td>
+            <td><span class="maj">A♭</span><span class="min">Fm</span></td>
+            <td><span class="maj">E♭</span><span class="min">Cm</span></td>
+            <td><span class="maj">B♭</span><span class="min">Gm</span></td>
+            <td><span class="maj">F</span><span class="min">Dm</span></td>
+          </tr>
+        </table>
+        <div class="fifths-cap"><b>Top = major key · bottom = its relative minor.</b> Same slice = same notes. Each 5th up adds a ♯, each 5th down adds a ♭ — after F it wraps back to C.</div>
+      </div>
+
+    </div>
+
+    <!-- ============ RIGHT ============ -->
+    <div class="rightcol">
+
+      <div class="card">
+        <h3>TETRACHORD PATTERNS · 4 notes spanning a perfect 4th</h3>
+        <div class="tetra-grid">
+
+          <!-- MAJOR  W W H  -->
+          <div class="tetra">
+            <svg viewBox="0 0 92 66" xmlns="http://www.w3.org/2000/svg">
+              <line x1="8" y1="16" x2="88" y2="16" stroke="#b9b3a8" stroke-width="1.6"/>
+              <line x1="8" y1="48" x2="88" y2="48" stroke="#6d6860" stroke-width="3"/>
+              <line x1="10" y1="8" x2="10" y2="56" stroke="#6d6860" stroke-width="3"/>
+              <line x1="25.6" y1="8" x2="25.6" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+              <line x1="41.2" y1="8" x2="41.2" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+              <line x1="56.8" y1="8" x2="56.8" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+              <line x1="72.4" y1="8" x2="72.4" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+              <line x1="88" y1="8" x2="88" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+              <circle cx="17.8" cy="48" r="7.4" fill="#4a9eff"/>
+              <circle cx="49" cy="48" r="7.4" fill="#4a9eff" fill-opacity="0.38"/>
+              <circle cx="80.2" cy="48" r="7.4" fill="#4a9eff" fill-opacity="0.38"/>
+              <circle cx="17.8" cy="16" r="7.4" fill="#4a9eff" fill-opacity="0.38"/>
+              <g font-family="Helvetica Neue, Arial, sans-serif" font-size="9" font-weight="bold" fill="#fff" text-anchor="middle">
+                <text x="17.8" y="51.5">1</text>
+                <text x="49" y="51.5">2</text>
+                <text x="80.2" y="51.5">3</text>
+                <text x="17.8" y="19.5">4</text>
+              </g>
+            </svg>
+            <div class="cap">MAJOR <span class="steps">W W H</span></div>
+          </div>
+
+          <!-- MINOR  W H W  -->
+          <div class="tetra">
+            <svg viewBox="0 0 92 66" xmlns="http://www.w3.org/2000/svg">
+              <line x1="8" y1="16" x2="88" y2="16" stroke="#b9b3a8" stroke-width="1.6"/>
+              <line x1="8" y1="48" x2="88" y2="48" stroke="#6d6860" stroke-width="3"/>
+              <line x1="10" y1="8" x2="10" y2="56" stroke="#6d6860" stroke-width="3"/>
+              <line x1="25.6" y1="8" x2="25.6" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+              <line x1="41.2" y1="8" x2="41.2" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+              <line x1="56.8" y1="8" x2="56.8" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+              <line x1="72.4" y1="8" x2="72.4" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+              <line x1="88" y1="8" x2="88" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+              <circle cx="17.8" cy="48" r="7.4" fill="#6cbf6c"/>
+              <circle cx="49" cy="48" r="7.4" fill="#6cbf6c" fill-opacity="0.38"/>
+              <circle cx="64.6" cy="48" r="7.4" fill="#6cbf6c" fill-opacity="0.38"/>
+              <circle cx="17.8" cy="16" r="7.4" fill="#6cbf6c" fill-opacity="0.38"/>
+              <g font-family="Helvetica Neue, Arial, sans-serif" font-size="9" font-weight="bold" fill="#fff" text-anchor="middle">
+                <text x="17.8" y="51.5">1</text>
+                <text x="49" y="51.5">2</text>
+                <text x="64.6" y="51.5">♭3</text>
+                <text x="17.8" y="19.5">4</text>
+              </g>
+            </svg>
+            <div class="cap">MINOR <span class="steps">W H W</span></div>
+          </div>
+
+          <!-- PHRYGIAN  H W W  -->
+          <div class="tetra">
+            <svg viewBox="0 0 92 66" xmlns="http://www.w3.org/2000/svg">
+              <line x1="8" y1="16" x2="88" y2="16" stroke="#b9b3a8" stroke-width="1.6"/>
+              <line x1="8" y1="48" x2="88" y2="48" stroke="#6d6860" stroke-width="3"/>
+              <line x1="10" y1="8" x2="10" y2="56" stroke="#6d6860" stroke-width="3"/>
+              <line x1="25.6" y1="8" x2="25.6" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+              <line x1="41.2" y1="8" x2="41.2" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+              <line x1="56.8" y1="8" x2="56.8" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+              <line x1="72.4" y1="8" x2="72.4" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+              <line x1="88" y1="8" x2="88" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+              <circle cx="17.8" cy="48" r="7.4" fill="#d98a4a"/>
+              <circle cx="33.4" cy="48" r="7.4" fill="#d98a4a" fill-opacity="0.38"/>
+              <circle cx="64.6" cy="48" r="7.4" fill="#d98a4a" fill-opacity="0.38"/>
+              <circle cx="17.8" cy="16" r="7.4" fill="#d98a4a" fill-opacity="0.38"/>
+              <g font-family="Helvetica Neue, Arial, sans-serif" font-size="9" font-weight="bold" fill="#fff" text-anchor="middle">
+                <text x="17.8" y="51.5">1</text>
+                <text x="33.4" y="51.5">♭2</text>
+                <text x="64.6" y="51.5">♭3</text>
+                <text x="17.8" y="19.5">4</text>
+              </g>
+            </svg>
+            <div class="cap">PHRYGIAN <span class="steps">H W W</span></div>
+          </div>
+
+          <!-- HARMONIC  H A2 H  -->
+          <div class="tetra">
+            <svg viewBox="0 0 92 66" xmlns="http://www.w3.org/2000/svg">
+              <line x1="8" y1="16" x2="88" y2="16" stroke="#b9b3a8" stroke-width="1.6"/>
+              <line x1="8" y1="48" x2="88" y2="48" stroke="#6d6860" stroke-width="3"/>
+              <line x1="10" y1="8" x2="10" y2="56" stroke="#6d6860" stroke-width="3"/>
+              <line x1="25.6" y1="8" x2="25.6" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+              <line x1="41.2" y1="8" x2="41.2" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+              <line x1="56.8" y1="8" x2="56.8" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+              <line x1="72.4" y1="8" x2="72.4" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+              <line x1="88" y1="8" x2="88" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+              <circle cx="17.8" cy="48" r="7.4" fill="#9aa7b8"/>
+              <circle cx="33.4" cy="48" r="7.4" fill="#9aa7b8" fill-opacity="0.38"/>
+              <circle cx="80.2" cy="48" r="7.4" fill="#9aa7b8" fill-opacity="0.38"/>
+              <circle cx="17.8" cy="16" r="7.4" fill="#9aa7b8" fill-opacity="0.38"/>
+              <g font-family="Helvetica Neue, Arial, sans-serif" font-size="9" font-weight="bold" fill="#fff" text-anchor="middle">
+                <text x="17.8" y="51.5">1</text>
+                <text x="33.4" y="51.5">♭2</text>
+                <text x="80.2" y="51.5">3</text>
+                <text x="17.8" y="19.5">4</text>
+              </g>
+            </svg>
+            <div class="cap">HARMONIC <span class="steps">H A2 H</span></div>
+          </div>
+
+        </div>
+        <div class="tetra-bonus"><b>Bonus shapes:</b> Lydian <span class="steps">W W W</span> (0–2–4–6, spans a tritone) · Diminished <span class="steps">H W H</span> (0–1–3–4, spans a major 3rd)</div>
+        <div class="tetra-note"><b>Read it:</b> 1 at fret 0 — walk the W/H steps on the low string, and the <b>4 sits right above 1</b> on the next string. Two of these + a whole-step gap = a full scale.</div>
+      </div>
+
+      <div class="card">
+        <h3>SCALES = LOWER + GAP + UPPER</h3>
+        <table class="scales">
+          <thead>
+            <tr>
+              <th>SCALE</th><th>LOWER</th><th>GAP</th><th>UPPER</th><th>CHORD</th><th>NOTES</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="sc">Major</td><td class="tet">Major</td><td class="gap">W</td><td class="tet">Major</td><td class="ch">Cmaj7</td><td class="notes">C D E F | G A B C</td></tr>
+            <tr><td class="sc">Natural minor</td><td class="tet">Minor</td><td class="gap">W</td><td class="tet">Phrygian</td><td class="ch">Am7</td><td class="notes">A B C D | E F G A</td></tr>
+            <tr><td class="sc">Dorian</td><td class="tet">Minor</td><td class="gap">W</td><td class="tet">Minor</td><td class="ch">Dm7</td><td class="notes">D E F G | A B C D</td></tr>
+            <tr><td class="sc">Phrygian</td><td class="tet">Phrygian</td><td class="gap">W</td><td class="tet">Phrygian</td><td class="ch">Em7</td><td class="notes">E F G A | B C D E</td></tr>
+            <tr><td class="sc">Mixolydian</td><td class="tet">Major</td><td class="gap">W</td><td class="tet">Minor</td><td class="ch">G7</td><td class="notes">G A B C | D E F G</td></tr>
+            <tr><td class="sc">Lydian</td><td class="tet">Lydian</td><td class="gap">H</td><td class="tet">Major</td><td class="ch">Cmaj7</td><td class="notes">C D E F♯ | G A B C</td></tr>
+            <tr><td class="sc">Harmonic minor</td><td class="tet">Minor</td><td class="gap">W</td><td class="tet">Harmonic</td><td class="ch">Am(maj7)</td><td class="notes">A B C D | E F G♯ A</td></tr>
+            <tr><td class="sc">Diminished</td><td class="tet">Dim.</td><td class="gap">W</td><td class="tet">Dim.</td><td class="ch">C°7</td><td class="notes">C D♭ E♭ E | F♯ G A B♭ C</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>CHORDS · the 7th chord is hiding in the scale — 1st + 3rd note of each half</h3>
+        <div class="chord-recipes">
+          <div class="ch"><span class="name">maj7</span><br><span class="rec">1 3 5 7</span><br><span class="src">Major, Lydian</span></div>
+          <div class="ch"><span class="name">m7</span><br><span class="rec">1 ♭3 5 ♭7</span><br><span class="src">Minor, Dorian, Phrygian</span></div>
+          <div class="ch"><span class="name">7</span><br><span class="rec">1 3 5 ♭7</span><br><span class="src">Mixolydian</span></div>
+          <div class="ch"><span class="name">m(maj7)</span><br><span class="rec">1 ♭3 5 7</span><br><span class="src">Harmonic minor</span></div>
+          <div class="ch"><span class="name">°7</span><br><span class="rec">1 ♭3 ♭5 6</span><br><span class="src">Diminished</span></div>
+          <div class="ch"><span class="name">triads</span><br><span class="rec">1 3 5 · 1 ♭3 5 · 1 5</span><br><span class="src">major · minor · power</span></div>
+        </div>
+        <div class="chords-more"><b>How:</b> split the scale at the gap. Take the 1st + 3rd note of the lower half and the 1st + 3rd of the upper half — those 4 notes are the 7th chord. Every other chord is just a piece of it.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="foot">
+    <span class="try">TRY IT NOW: from any note walk <span class="mono">W&nbsp;W&nbsp;H&nbsp;W&nbsp;W&nbsp;W&nbsp;H</span> — you just built the major scale.</span>
+    <span class="src">Interval Lab · github.com/ogomez34/interval-lab</span>
+  </div>
+
+</div>
+
+<!-- ================= PAGE 2 · FRETBOARD SHAPES ================= -->
+<div class="poster page2">
+
+  <div class="head">
+    <h1>FRETBOARD <span class="accent">SHAPES</span></h1>
+    <span class="sub">tetrachords · scales · chords — for easy identification</span>
+  </div>
+  <div class="p2-note">Every shape here assumes <b>perfect-4th string pairs</b> (E–A, A–D, D–G, B–E). Across the <b>G→B pair, shift every upper-string note +1 fret</b>.</div>
+
+  <div class="sect">TETRACHORDS · THE FOUR LADDERS</div>
+  <div class="mini-row-6">
+
+    <div class="mini">
+      <svg viewBox="0 0 92 66" xmlns="http://www.w3.org/2000/svg">
+        <line x1="8" y1="16" x2="88" y2="16" stroke="#b9b3a8" stroke-width="1.6"/>
+        <line x1="8" y1="48" x2="88" y2="48" stroke="#6d6860" stroke-width="3"/>
+        <line x1="10" y1="8" x2="10" y2="56" stroke="#6d6860" stroke-width="3"/>
+        <line x1="25.6" y1="8" x2="25.6" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="41.2" y1="8" x2="41.2" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="56.8" y1="8" x2="56.8" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="72.4" y1="8" x2="72.4" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="88" y1="8" x2="88" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <circle cx="17.8" cy="48" r="7.4" fill="#4a9eff"/>
+        <circle cx="49" cy="48" r="7.4" fill="#4a9eff" fill-opacity="0.38"/>
+        <circle cx="80.2" cy="48" r="7.4" fill="#4a9eff" fill-opacity="0.38"/>
+        <circle cx="17.8" cy="16" r="7.4" fill="#4a9eff" fill-opacity="0.38"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="9" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="17.8" y="51.5">1</text><text x="49" y="51.5">2</text><text x="80.2" y="51.5">3</text><text x="17.8" y="19.5">4</text>
+        </g>
+      </svg>
+      <div class="cap">MAJOR <span class="steps">W W H</span></div>
+      <div class="sub">0 – 2 – 4 – 5</div>
+    </div>
+
+    <div class="mini">
+      <svg viewBox="0 0 92 66" xmlns="http://www.w3.org/2000/svg">
+        <line x1="8" y1="16" x2="88" y2="16" stroke="#b9b3a8" stroke-width="1.6"/>
+        <line x1="8" y1="48" x2="88" y2="48" stroke="#6d6860" stroke-width="3"/>
+        <line x1="10" y1="8" x2="10" y2="56" stroke="#6d6860" stroke-width="3"/>
+        <line x1="25.6" y1="8" x2="25.6" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="41.2" y1="8" x2="41.2" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="56.8" y1="8" x2="56.8" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="72.4" y1="8" x2="72.4" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="88" y1="8" x2="88" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <circle cx="17.8" cy="48" r="7.4" fill="#6cbf6c"/>
+        <circle cx="49" cy="48" r="7.4" fill="#6cbf6c" fill-opacity="0.38"/>
+        <circle cx="64.6" cy="48" r="7.4" fill="#6cbf6c" fill-opacity="0.38"/>
+        <circle cx="17.8" cy="16" r="7.4" fill="#6cbf6c" fill-opacity="0.38"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="9" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="17.8" y="51.5">1</text><text x="49" y="51.5">2</text><text x="64.6" y="51.5">♭3</text><text x="17.8" y="19.5">4</text>
+        </g>
+      </svg>
+      <div class="cap">MINOR <span class="steps">W H W</span></div>
+      <div class="sub">0 – 2 – 3 – 5</div>
+    </div>
+
+    <div class="mini">
+      <svg viewBox="0 0 92 66" xmlns="http://www.w3.org/2000/svg">
+        <line x1="8" y1="16" x2="88" y2="16" stroke="#b9b3a8" stroke-width="1.6"/>
+        <line x1="8" y1="48" x2="88" y2="48" stroke="#6d6860" stroke-width="3"/>
+        <line x1="10" y1="8" x2="10" y2="56" stroke="#6d6860" stroke-width="3"/>
+        <line x1="25.6" y1="8" x2="25.6" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="41.2" y1="8" x2="41.2" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="56.8" y1="8" x2="56.8" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="72.4" y1="8" x2="72.4" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="88" y1="8" x2="88" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <circle cx="17.8" cy="48" r="7.4" fill="#d98a4a"/>
+        <circle cx="33.4" cy="48" r="7.4" fill="#d98a4a" fill-opacity="0.38"/>
+        <circle cx="64.6" cy="48" r="7.4" fill="#d98a4a" fill-opacity="0.38"/>
+        <circle cx="17.8" cy="16" r="7.4" fill="#d98a4a" fill-opacity="0.38"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="9" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="17.8" y="51.5">1</text><text x="33.4" y="51.5">♭2</text><text x="64.6" y="51.5">♭3</text><text x="17.8" y="19.5">4</text>
+        </g>
+      </svg>
+      <div class="cap">PHRYGIAN <span class="steps">H W W</span></div>
+      <div class="sub">0 – 1 – 3 – 5</div>
+    </div>
+
+    <div class="mini">
+      <svg viewBox="0 0 92 66" xmlns="http://www.w3.org/2000/svg">
+        <line x1="8" y1="16" x2="88" y2="16" stroke="#b9b3a8" stroke-width="1.6"/>
+        <line x1="8" y1="48" x2="88" y2="48" stroke="#6d6860" stroke-width="3"/>
+        <line x1="10" y1="8" x2="10" y2="56" stroke="#6d6860" stroke-width="3"/>
+        <line x1="25.6" y1="8" x2="25.6" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="41.2" y1="8" x2="41.2" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="56.8" y1="8" x2="56.8" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="72.4" y1="8" x2="72.4" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="88" y1="8" x2="88" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <circle cx="17.8" cy="48" r="7.4" fill="#9aa7b8"/>
+        <circle cx="33.4" cy="48" r="7.4" fill="#9aa7b8" fill-opacity="0.38"/>
+        <circle cx="80.2" cy="48" r="7.4" fill="#9aa7b8" fill-opacity="0.38"/>
+        <circle cx="17.8" cy="16" r="7.4" fill="#9aa7b8" fill-opacity="0.38"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="9" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="17.8" y="51.5">1</text><text x="33.4" y="51.5">♭2</text><text x="80.2" y="51.5">3</text><text x="17.8" y="19.5">4</text>
+        </g>
+      </svg>
+      <div class="cap">HARMONIC <span class="steps">H A2 H</span></div>
+      <div class="sub">0 – 1 – 4 – 5</div>
+    </div>
+
+    <div class="mini">
+      <svg viewBox="0 0 92 66" xmlns="http://www.w3.org/2000/svg">
+        <line x1="8" y1="16" x2="88" y2="16" stroke="#b9b3a8" stroke-width="1.6"/>
+        <line x1="8" y1="48" x2="88" y2="48" stroke="#6d6860" stroke-width="3"/>
+        <line x1="10" y1="8" x2="10" y2="56" stroke="#6d6860" stroke-width="3"/>
+        <line x1="25.6" y1="8" x2="25.6" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="41.2" y1="8" x2="41.2" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="56.8" y1="8" x2="56.8" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="72.4" y1="8" x2="72.4" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="88" y1="8" x2="88" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <circle cx="17.8" cy="48" r="7.4" fill="#b06ee0"/>
+        <circle cx="49" cy="48" r="7.4" fill="#b06ee0" fill-opacity="0.38"/>
+        <circle cx="80.2" cy="48" r="7.4" fill="#b06ee0" fill-opacity="0.38"/>
+        <circle cx="33.4" cy="16" r="7.4" fill="#b06ee0" fill-opacity="0.38"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="9" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="17.8" y="51.5">1</text><text x="49" y="51.5">2</text><text x="80.2" y="51.5">3</text><text x="33.4" y="19.5">4</text>
+        </g>
+      </svg>
+      <div class="cap">LYDIAN <span class="steps">W W W</span></div>
+      <div class="sub">0 – 2 – 4 – 6 · spans a tritone</div>
+    </div>
+
+    <div class="mini">
+      <svg viewBox="0 0 92 66" xmlns="http://www.w3.org/2000/svg">
+        <line x1="8" y1="16" x2="88" y2="16" stroke="#b9b3a8" stroke-width="1.6"/>
+        <line x1="8" y1="48" x2="88" y2="48" stroke="#6d6860" stroke-width="3"/>
+        <line x1="10" y1="8" x2="10" y2="56" stroke="#6d6860" stroke-width="3"/>
+        <line x1="25.6" y1="8" x2="25.6" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="41.2" y1="8" x2="41.2" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="56.8" y1="8" x2="56.8" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="72.4" y1="8" x2="72.4" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="88" y1="8" x2="88" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <circle cx="17.8" cy="48" r="7.4" fill="#8a8f98"/>
+        <circle cx="33.4" cy="48" r="7.4" fill="#8a8f98" fill-opacity="0.38"/>
+        <circle cx="64.6" cy="48" r="7.4" fill="#8a8f98" fill-opacity="0.38"/>
+        <circle cx="80.2" cy="48" r="7.4" fill="#8a8f98" fill-opacity="0.38"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="9" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="17.8" y="51.5">1</text><text x="33.4" y="51.5">♭2</text><text x="64.6" y="51.5">♭3</text><text x="80.2" y="51.5">3</text>
+        </g>
+      </svg>
+      <div class="cap">DIMINISHED <span class="steps">H W H</span></div>
+      <div class="sub">0 – 1 – 3 – 4 · spans a major 3rd — all four stay on one string</div>
+    </div>
+
+  </div>
+
+  <div class="sect">THE SAME TETRACHORD IN ITS 4 CROSSINGS · MAJOR</div>
+  <div class="mini-row-4">
+
+    <div class="mini">
+      <svg viewBox="0 0 100 66" xmlns="http://www.w3.org/2000/svg">
+        <line x1="6" y1="16" x2="94" y2="16" stroke="#b9b3a8" stroke-width="1.6"/>
+        <line x1="6" y1="48" x2="94" y2="48" stroke="#6d6860" stroke-width="3"/>
+        <line x1="8" y1="8" x2="8" y2="56" stroke="#6d6860" stroke-width="3"/>
+        <line x1="23.6" y1="8" x2="23.6" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="39.2" y1="8" x2="39.2" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="54.8" y1="8" x2="54.8" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="70.4" y1="8" x2="70.4" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="86" y1="8" x2="86" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <circle cx="15.8" cy="48" r="6.8" fill="#4a9eff"/>
+        <circle cx="47" cy="48" r="6.8" fill="#4a9eff" fill-opacity="0.38"/>
+        <circle cx="78.2" cy="48" r="6.8" fill="#4a9eff" fill-opacity="0.38"/>
+        <circle cx="93.8" cy="48" r="6.8" fill="#4a9eff" fill-opacity="0.38"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="15.8" y="51">1</text><text x="47" y="51">2</text><text x="78.2" y="51">3</text><text x="93.8" y="51">4</text>
+        </g>
+      </svg>
+      <div class="cap">I · all 4 on one string</div>
+    </div>
+
+    <div class="mini">
+      <svg viewBox="0 0 100 66" xmlns="http://www.w3.org/2000/svg">
+        <line x1="6" y1="16" x2="94" y2="16" stroke="#b9b3a8" stroke-width="1.6"/>
+        <line x1="6" y1="48" x2="94" y2="48" stroke="#6d6860" stroke-width="3"/>
+        <line x1="8" y1="8" x2="8" y2="56" stroke="#6d6860" stroke-width="3"/>
+        <line x1="23.6" y1="8" x2="23.6" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="39.2" y1="8" x2="39.2" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="54.8" y1="8" x2="54.8" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="70.4" y1="8" x2="70.4" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="86" y1="8" x2="86" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <circle cx="15.8" cy="48" r="6.8" fill="#4a9eff"/>
+        <circle cx="47" cy="48" r="6.8" fill="#4a9eff" fill-opacity="0.38"/>
+        <circle cx="78.2" cy="48" r="6.8" fill="#4a9eff" fill-opacity="0.38"/>
+        <circle cx="15.8" cy="16" r="6.8" fill="#4a9eff" fill-opacity="0.38"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="15.8" y="51">1</text><text x="47" y="51">2</text><text x="78.2" y="51">3</text><text x="15.8" y="19">4</text>
+        </g>
+      </svg>
+      <div class="cap">R · 3 + 1</div>
+    </div>
+
+    <div class="mini">
+      <svg viewBox="0 0 100 66" xmlns="http://www.w3.org/2000/svg">
+        <line x1="6" y1="16" x2="94" y2="16" stroke="#b9b3a8" stroke-width="1.6"/>
+        <line x1="6" y1="48" x2="94" y2="48" stroke="#6d6860" stroke-width="3"/>
+        <line x1="8" y1="8" x2="8" y2="56" stroke="#6d6860" stroke-width="3"/>
+        <line x1="23.6" y1="8" x2="23.6" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="39.2" y1="8" x2="39.2" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="54.8" y1="8" x2="54.8" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="70.4" y1="8" x2="70.4" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="86" y1="8" x2="86" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <circle cx="31.4" cy="48" r="6.8" fill="#4a9eff"/>
+        <circle cx="62.6" cy="48" r="6.8" fill="#4a9eff" fill-opacity="0.38"/>
+        <circle cx="15.8" cy="16" r="6.8" fill="#4a9eff" fill-opacity="0.38"/>
+        <circle cx="31.4" cy="16" r="6.8" fill="#4a9eff" fill-opacity="0.38"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="31.4" y="51">1</text><text x="62.6" y="51">2</text><text x="15.8" y="19">3</text><text x="31.4" y="19">4</text>
+        </g>
+      </svg>
+      <div class="cap">Z · 2 + 2</div>
+    </div>
+
+    <div class="mini">
+      <svg viewBox="0 0 100 66" xmlns="http://www.w3.org/2000/svg">
+        <line x1="6" y1="16" x2="94" y2="16" stroke="#b9b3a8" stroke-width="1.6"/>
+        <line x1="6" y1="48" x2="94" y2="48" stroke="#6d6860" stroke-width="3"/>
+        <line x1="8" y1="8" x2="8" y2="56" stroke="#6d6860" stroke-width="3"/>
+        <line x1="23.6" y1="8" x2="23.6" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="39.2" y1="8" x2="39.2" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="54.8" y1="8" x2="54.8" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="70.4" y1="8" x2="70.4" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="86" y1="8" x2="86" y2="56" stroke="#c9c3b8" stroke-width="1.4"/>
+        <circle cx="62.6" cy="48" r="6.8" fill="#4a9eff"/>
+        <circle cx="15.8" cy="16" r="6.8" fill="#4a9eff" fill-opacity="0.38"/>
+        <circle cx="47" cy="16" r="6.8" fill="#4a9eff" fill-opacity="0.38"/>
+        <circle cx="62.6" cy="16" r="6.8" fill="#4a9eff" fill-opacity="0.38"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="62.6" y="51">1</text><text x="15.8" y="19">2</text><text x="47" y="19">3</text><text x="62.6" y="19">4</text>
+        </g>
+      </svg>
+      <div class="cap">J · 1 + 3</div>
+    </div>
+
+  </div>
+
+  <div class="sect">SCALES · ONE OCTAVE = TWO TETRACHORDS ON TWO STRINGS</div>
+  <div class="scale-grid">
+
+    <div class="scale-cell">
+      <svg viewBox="0 0 200 52" xmlns="http://www.w3.org/2000/svg">
+        <line x1="10" y1="14" x2="190" y2="14" stroke="#b9b3a8" stroke-width="1.6"/>
+        <line x1="10" y1="38" x2="190" y2="38" stroke="#6d6860" stroke-width="3"/>
+        <line x1="12" y1="6" x2="12" y2="46" stroke="#6d6860" stroke-width="3"/>
+        <line x1="34" y1="6" x2="34" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="56" y1="6" x2="56" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="78" y1="6" x2="78" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="100" y1="6" x2="100" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="122" y1="6" x2="122" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="144" y1="6" x2="144" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="166" y1="6" x2="166" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="188" y1="6" x2="188" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <circle cx="23" cy="38" r="6.6" fill="#4a9eff"/><circle cx="67" cy="38" r="6.6" fill="#4a9eff" fill-opacity="0.55"/>
+        <circle cx="111" cy="38" r="6.6" fill="#4a9eff" fill-opacity="0.55"/><circle cx="133" cy="38" r="6.6" fill="#4a9eff" fill-opacity="0.55"/>
+        <circle cx="67" cy="14" r="6.6" fill="#4a9eff" fill-opacity="0.55"/><circle cx="111" cy="14" r="6.6" fill="#4a9eff" fill-opacity="0.55"/>
+        <circle cx="155" cy="14" r="6.6" fill="#4a9eff" fill-opacity="0.55"/><circle cx="177" cy="14" r="6.6" fill="#4a9eff"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="7.5" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="23" y="40.6">1</text><text x="67" y="40.6">2</text><text x="111" y="40.6">3</text><text x="133" y="40.6">4</text>
+          <text x="67" y="16.6">5</text><text x="111" y="16.6">6</text><text x="155" y="16.6">7</text><text x="177" y="16.6">8</text>
+        </g>
+      </svg>
+      <div class="cap">Major (Ionian)<span class="rec">major + major · 1 2 3 4 5 6 7</span></div>
+    </div>
+
+    <div class="scale-cell">
+      <svg viewBox="0 0 200 52" xmlns="http://www.w3.org/2000/svg">
+        <line x1="10" y1="14" x2="190" y2="14" stroke="#b9b3a8" stroke-width="1.6"/>
+        <line x1="10" y1="38" x2="190" y2="38" stroke="#6d6860" stroke-width="3"/>
+        <line x1="12" y1="6" x2="12" y2="46" stroke="#6d6860" stroke-width="3"/>
+        <line x1="34" y1="6" x2="34" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="56" y1="6" x2="56" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="78" y1="6" x2="78" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="100" y1="6" x2="100" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="122" y1="6" x2="122" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="144" y1="6" x2="144" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="166" y1="6" x2="166" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="188" y1="6" x2="188" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <circle cx="23" cy="38" r="6.6" fill="#6cbf6c"/><circle cx="67" cy="38" r="6.6" fill="#6cbf6c" fill-opacity="0.55"/>
+        <circle cx="89" cy="38" r="6.6" fill="#6cbf6c" fill-opacity="0.55"/><circle cx="133" cy="38" r="6.6" fill="#6cbf6c" fill-opacity="0.55"/>
+        <circle cx="67" cy="14" r="6.6" fill="#d98a4a" fill-opacity="0.55"/><circle cx="89" cy="14" r="6.6" fill="#d98a4a" fill-opacity="0.55"/>
+        <circle cx="133" cy="14" r="6.6" fill="#d98a4a" fill-opacity="0.55"/><circle cx="177" cy="14" r="6.6" fill="#d98a4a"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="7.5" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="23" y="40.6">1</text><text x="67" y="40.6">2</text><text x="89" y="40.6">♭3</text><text x="133" y="40.6">4</text>
+          <text x="67" y="16.6">5</text><text x="89" y="16.6">♭6</text><text x="133" y="16.6">♭7</text><text x="177" y="16.6">8</text>
+        </g>
+      </svg>
+      <div class="cap">Natural minor<span class="rec">minor + phrygian · 1 2 ♭3 4 5 ♭6 ♭7</span></div>
+    </div>
+
+    <div class="scale-cell">
+      <svg viewBox="0 0 200 52" xmlns="http://www.w3.org/2000/svg">
+        <line x1="10" y1="14" x2="190" y2="14" stroke="#b9b3a8" stroke-width="1.6"/>
+        <line x1="10" y1="38" x2="190" y2="38" stroke="#6d6860" stroke-width="3"/>
+        <line x1="12" y1="6" x2="12" y2="46" stroke="#6d6860" stroke-width="3"/>
+        <line x1="34" y1="6" x2="34" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="56" y1="6" x2="56" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="78" y1="6" x2="78" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="100" y1="6" x2="100" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="122" y1="6" x2="122" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="144" y1="6" x2="144" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="166" y1="6" x2="166" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="188" y1="6" x2="188" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <circle cx="23" cy="38" r="6.6" fill="#6cbf6c"/><circle cx="67" cy="38" r="6.6" fill="#6cbf6c" fill-opacity="0.55"/>
+        <circle cx="89" cy="38" r="6.6" fill="#6cbf6c" fill-opacity="0.55"/><circle cx="133" cy="38" r="6.6" fill="#6cbf6c" fill-opacity="0.55"/>
+        <circle cx="67" cy="14" r="6.6" fill="#6cbf6c" fill-opacity="0.55"/><circle cx="111" cy="14" r="6.6" fill="#6cbf6c" fill-opacity="0.55"/>
+        <circle cx="133" cy="14" r="6.6" fill="#6cbf6c" fill-opacity="0.55"/><circle cx="177" cy="14" r="6.6" fill="#6cbf6c"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="7.5" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="23" y="40.6">1</text><text x="67" y="40.6">2</text><text x="89" y="40.6">♭3</text><text x="133" y="40.6">4</text>
+          <text x="67" y="16.6">5</text><text x="111" y="16.6">6</text><text x="133" y="16.6">♭7</text><text x="177" y="16.6">8</text>
+        </g>
+      </svg>
+      <div class="cap">Dorian<span class="rec">minor + minor · 1 2 ♭3 4 5 6 ♭7</span></div>
+    </div>
+
+    <div class="scale-cell">
+      <svg viewBox="0 0 200 52" xmlns="http://www.w3.org/2000/svg">
+        <line x1="10" y1="14" x2="190" y2="14" stroke="#b9b3a8" stroke-width="1.6"/>
+        <line x1="10" y1="38" x2="190" y2="38" stroke="#6d6860" stroke-width="3"/>
+        <line x1="12" y1="6" x2="12" y2="46" stroke="#6d6860" stroke-width="3"/>
+        <line x1="34" y1="6" x2="34" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="56" y1="6" x2="56" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="78" y1="6" x2="78" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="100" y1="6" x2="100" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="122" y1="6" x2="122" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="144" y1="6" x2="144" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="166" y1="6" x2="166" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="188" y1="6" x2="188" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <circle cx="23" cy="38" r="6.6" fill="#d98a4a"/><circle cx="45" cy="38" r="6.6" fill="#d98a4a" fill-opacity="0.55"/>
+        <circle cx="89" cy="38" r="6.6" fill="#d98a4a" fill-opacity="0.55"/><circle cx="133" cy="38" r="6.6" fill="#d98a4a" fill-opacity="0.55"/>
+        <circle cx="67" cy="14" r="6.6" fill="#d98a4a" fill-opacity="0.55"/><circle cx="89" cy="14" r="6.6" fill="#d98a4a" fill-opacity="0.55"/>
+        <circle cx="133" cy="14" r="6.6" fill="#d98a4a" fill-opacity="0.55"/><circle cx="177" cy="14" r="6.6" fill="#d98a4a"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="7.5" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="23" y="40.6">1</text><text x="45" y="40.6">♭2</text><text x="89" y="40.6">♭3</text><text x="133" y="40.6">4</text>
+          <text x="67" y="16.6">5</text><text x="89" y="16.6">♭6</text><text x="133" y="16.6">♭7</text><text x="177" y="16.6">8</text>
+        </g>
+      </svg>
+      <div class="cap">Phrygian<span class="rec">phrygian + phrygian · 1 ♭2 ♭3 4 5 ♭6 ♭7</span></div>
+    </div>
+
+    <div class="scale-cell">
+      <svg viewBox="0 0 200 52" xmlns="http://www.w3.org/2000/svg">
+        <line x1="10" y1="14" x2="190" y2="14" stroke="#b9b3a8" stroke-width="1.6"/>
+        <line x1="10" y1="38" x2="190" y2="38" stroke="#6d6860" stroke-width="3"/>
+        <line x1="12" y1="6" x2="12" y2="46" stroke="#6d6860" stroke-width="3"/>
+        <line x1="34" y1="6" x2="34" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="56" y1="6" x2="56" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="78" y1="6" x2="78" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="100" y1="6" x2="100" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="122" y1="6" x2="122" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="144" y1="6" x2="144" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="166" y1="6" x2="166" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="188" y1="6" x2="188" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <circle cx="23" cy="38" r="6.6" fill="#4a9eff"/><circle cx="67" cy="38" r="6.6" fill="#4a9eff" fill-opacity="0.55"/>
+        <circle cx="111" cy="38" r="6.6" fill="#4a9eff" fill-opacity="0.55"/><circle cx="133" cy="38" r="6.6" fill="#4a9eff" fill-opacity="0.55"/>
+        <circle cx="67" cy="14" r="6.6" fill="#6cbf6c" fill-opacity="0.55"/><circle cx="111" cy="14" r="6.6" fill="#6cbf6c" fill-opacity="0.55"/>
+        <circle cx="133" cy="14" r="6.6" fill="#6cbf6c" fill-opacity="0.55"/><circle cx="177" cy="14" r="6.6" fill="#6cbf6c"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="7.5" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="23" y="40.6">1</text><text x="67" y="40.6">2</text><text x="111" y="40.6">3</text><text x="133" y="40.6">4</text>
+          <text x="67" y="16.6">5</text><text x="111" y="16.6">6</text><text x="133" y="16.6">♭7</text><text x="177" y="16.6">8</text>
+        </g>
+      </svg>
+      <div class="cap">Mixolydian<span class="rec">major + minor · 1 2 3 4 5 6 ♭7</span></div>
+    </div>
+
+    <div class="scale-cell">
+      <svg viewBox="0 0 200 52" xmlns="http://www.w3.org/2000/svg">
+        <line x1="10" y1="14" x2="190" y2="14" stroke="#b9b3a8" stroke-width="1.6"/>
+        <line x1="10" y1="38" x2="190" y2="38" stroke="#6d6860" stroke-width="3"/>
+        <line x1="12" y1="6" x2="12" y2="46" stroke="#6d6860" stroke-width="3"/>
+        <line x1="34" y1="6" x2="34" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="56" y1="6" x2="56" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="78" y1="6" x2="78" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="100" y1="6" x2="100" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="122" y1="6" x2="122" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="144" y1="6" x2="144" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="166" y1="6" x2="166" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="188" y1="6" x2="188" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <circle cx="23" cy="38" r="6.6" fill="#b06ee0"/><circle cx="67" cy="38" r="6.6" fill="#b06ee0" fill-opacity="0.55"/>
+        <circle cx="111" cy="38" r="6.6" fill="#b06ee0" fill-opacity="0.55"/><circle cx="155" cy="38" r="6.6" fill="#b06ee0" fill-opacity="0.55"/>
+        <circle cx="67" cy="14" r="6.6" fill="#4a9eff" fill-opacity="0.55"/><circle cx="111" cy="14" r="6.6" fill="#4a9eff" fill-opacity="0.55"/>
+        <circle cx="155" cy="14" r="6.6" fill="#4a9eff" fill-opacity="0.55"/><circle cx="177" cy="14" r="6.6" fill="#4a9eff"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="7.5" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="23" y="40.6">1</text><text x="67" y="40.6">2</text><text x="111" y="40.6">3</text><text x="155" y="40.6">♯4</text>
+          <text x="67" y="16.6">5</text><text x="111" y="16.6">6</text><text x="155" y="16.6">7</text><text x="177" y="16.6">8</text>
+        </g>
+      </svg>
+      <div class="cap">Lydian<span class="rec">lydian + major · 1 2 3 ♯4 5 6 7</span></div>
+    </div>
+
+    <div class="scale-cell">
+      <svg viewBox="0 0 200 52" xmlns="http://www.w3.org/2000/svg">
+        <line x1="10" y1="14" x2="190" y2="14" stroke="#b9b3a8" stroke-width="1.6"/>
+        <line x1="10" y1="38" x2="190" y2="38" stroke="#6d6860" stroke-width="3"/>
+        <line x1="12" y1="6" x2="12" y2="46" stroke="#6d6860" stroke-width="3"/>
+        <line x1="34" y1="6" x2="34" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="56" y1="6" x2="56" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="78" y1="6" x2="78" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="100" y1="6" x2="100" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="122" y1="6" x2="122" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="144" y1="6" x2="144" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="166" y1="6" x2="166" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="188" y1="6" x2="188" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <circle cx="23" cy="38" r="6.6" fill="#6cbf6c"/><circle cx="67" cy="38" r="6.6" fill="#6cbf6c" fill-opacity="0.55"/>
+        <circle cx="89" cy="38" r="6.6" fill="#6cbf6c" fill-opacity="0.55"/><circle cx="133" cy="38" r="6.6" fill="#6cbf6c" fill-opacity="0.55"/>
+        <circle cx="67" cy="14" r="6.6" fill="#9aa7b8" fill-opacity="0.55"/><circle cx="89" cy="14" r="6.6" fill="#9aa7b8" fill-opacity="0.55"/>
+        <circle cx="155" cy="14" r="6.6" fill="#9aa7b8" fill-opacity="0.55"/><circle cx="177" cy="14" r="6.6" fill="#9aa7b8"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="7.5" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="23" y="40.6">1</text><text x="67" y="40.6">2</text><text x="89" y="40.6">♭3</text><text x="133" y="40.6">4</text>
+          <text x="67" y="16.6">5</text><text x="89" y="16.6">♭6</text><text x="155" y="16.6">7</text><text x="177" y="16.6">8</text>
+        </g>
+      </svg>
+      <div class="cap">Harmonic minor<span class="rec">minor + harmonic · 1 2 ♭3 4 5 ♭6 7</span></div>
+    </div>
+
+    <div class="scale-cell">
+      <svg viewBox="0 0 200 52" xmlns="http://www.w3.org/2000/svg">
+        <line x1="10" y1="14" x2="190" y2="14" stroke="#b9b3a8" stroke-width="1.6"/>
+        <line x1="10" y1="38" x2="190" y2="38" stroke="#6d6860" stroke-width="3"/>
+        <line x1="12" y1="6" x2="12" y2="46" stroke="#6d6860" stroke-width="3"/>
+        <line x1="34" y1="6" x2="34" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="56" y1="6" x2="56" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="78" y1="6" x2="78" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="100" y1="6" x2="100" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="122" y1="6" x2="122" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="144" y1="6" x2="144" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <line x1="166" y1="6" x2="166" y2="46" stroke="#c9c3b8" stroke-width="1.4"/><line x1="188" y1="6" x2="188" y2="46" stroke="#c9c3b8" stroke-width="1.4"/>
+        <circle cx="23" cy="38" r="6.6" fill="#8a8f98"/><circle cx="45" cy="38" r="6.6" fill="#8a8f98" fill-opacity="0.55"/>
+        <circle cx="89" cy="38" r="6.6" fill="#8a8f98" fill-opacity="0.55"/><circle cx="111" cy="38" r="6.6" fill="#8a8f98" fill-opacity="0.55"/>
+        <circle cx="45" cy="14" r="6.6" fill="#8a8f98" fill-opacity="0.55"/><circle cx="67" cy="14" r="6.6" fill="#8a8f98" fill-opacity="0.55"/>
+        <circle cx="111" cy="14" r="6.6" fill="#8a8f98" fill-opacity="0.55"/><circle cx="133" cy="14" r="6.6" fill="#8a8f98" fill-opacity="0.55"/>
+        <circle cx="177" cy="14" r="6.6" fill="#8a8f98"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="7.5" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="23" y="40.6">1</text><text x="45" y="40.6">♭2</text><text x="89" y="40.6">♭3</text><text x="111" y="40.6">3</text>
+          <text x="45" y="16.6">♭5</text><text x="67" y="16.6">♭6</text><text x="111" y="16.6">6</text><text x="133" y="16.6">7</text>
+          <text x="177" y="16.6">8</text>
+        </g>
+      </svg>
+      <div class="cap">Diminished (whole-half)<span class="rec">dim + dim · 1 ♭2 ♭3 3 ♭5 ♭6 6 7</span></div>
+    </div>
+
+  </div>
+
+  <div class="sect">CHORDS · THE SHAPES AND WHAT THEY'RE MADE OF</div>
+  <div class="chord-grid">
+
+    <div class="chord">
+      <svg viewBox="0 0 110 150" xmlns="http://www.w3.org/2000/svg">
+        <line x1="18" y1="36" x2="92" y2="36" stroke="#6d6860" stroke-width="3"/>
+        <line x1="18" y1="60" x2="92" y2="60" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="84" x2="92" y2="84" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="108" x2="92" y2="108" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="132" x2="92" y2="132" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="36" x2="18" y2="132" stroke="#6d6860" stroke-width="2"/><line x1="32.8" y1="36" x2="32.8" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="47.6" y1="36" x2="47.6" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="62.4" y1="36" x2="62.4" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="77.2" y1="36" x2="77.2" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="92" y1="36" x2="92" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <circle cx="18" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <circle cx="32.8" cy="72" r="8.2" fill="#232126"/><circle cx="47.6" cy="72" r="8.2" fill="#232126"/>
+        <text x="62.4" y="32.5" font-family="Helvetica Neue, Arial, sans-serif" font-size="13" fill="#6d6860" text-anchor="middle">×</text>
+        <text x="77.2" y="32.5" font-family="Helvetica Neue, Arial, sans-serif" font-size="13" fill="#6d6860" text-anchor="middle">×</text>
+        <text x="92" y="32.5" font-family="Helvetica Neue, Arial, sans-serif" font-size="13" fill="#6d6860" text-anchor="middle">×</text>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="8" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="32.8" y="74.8">5</text><text x="47.6" y="74.8">R</text>
+        </g>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="7.4" fill="#6d6860" text-anchor="middle">
+          <text x="18" y="146">R</text><text x="32.8" y="146">5</text><text x="47.6" y="146">R</text>
+        </g>
+      </svg>
+      <div class="cap">E5 <span class="rec">R 5 R</span></div>
+      <div class="sub">power · E-shape</div>
+    </div>
+
+    <div class="chord">
+      <svg viewBox="0 0 110 150" xmlns="http://www.w3.org/2000/svg">
+        <line x1="18" y1="36" x2="92" y2="36" stroke="#6d6860" stroke-width="3"/>
+        <line x1="18" y1="60" x2="92" y2="60" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="84" x2="92" y2="84" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="108" x2="92" y2="108" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="132" x2="92" y2="132" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="36" x2="18" y2="132" stroke="#6d6860" stroke-width="2"/><line x1="32.8" y1="36" x2="32.8" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="47.6" y1="36" x2="47.6" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="62.4" y1="36" x2="62.4" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="77.2" y1="36" x2="77.2" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="92" y1="36" x2="92" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <text x="18" y="32.5" font-family="Helvetica Neue, Arial, sans-serif" font-size="13" fill="#6d6860" text-anchor="middle">×</text>
+        <circle cx="32.8" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <circle cx="47.6" cy="72" r="8.2" fill="#232126"/><circle cx="62.4" cy="72" r="8.2" fill="#232126"/>
+        <text x="77.2" y="32.5" font-family="Helvetica Neue, Arial, sans-serif" font-size="13" fill="#6d6860" text-anchor="middle">×</text>
+        <text x="92" y="32.5" font-family="Helvetica Neue, Arial, sans-serif" font-size="13" fill="#6d6860" text-anchor="middle">×</text>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="8" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="47.6" y="74.8">5</text><text x="62.4" y="74.8">R</text>
+        </g>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="7.4" fill="#6d6860" text-anchor="middle">
+          <text x="32.8" y="146">R</text><text x="47.6" y="146">5</text><text x="62.4" y="146">R</text>
+        </g>
+      </svg>
+      <div class="cap">A5 <span class="rec">R 5 R</span></div>
+      <div class="sub">power · A-shape</div>
+    </div>
+
+    <div class="chord">
+      <svg viewBox="0 0 110 150" xmlns="http://www.w3.org/2000/svg">
+        <line x1="18" y1="36" x2="92" y2="36" stroke="#6d6860" stroke-width="3"/>
+        <line x1="18" y1="60" x2="92" y2="60" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="84" x2="92" y2="84" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="108" x2="92" y2="108" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="132" x2="92" y2="132" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="36" x2="18" y2="132" stroke="#6d6860" stroke-width="2"/><line x1="32.8" y1="36" x2="32.8" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="47.6" y1="36" x2="47.6" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="62.4" y1="36" x2="62.4" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="77.2" y1="36" x2="77.2" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="92" y1="36" x2="92" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <circle cx="18" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <circle cx="32.8" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <text x="47.6" y="32.5" font-family="Helvetica Neue, Arial, sans-serif" font-size="13" fill="#6d6860" text-anchor="middle">×</text>
+        <text x="62.4" y="32.5" font-family="Helvetica Neue, Arial, sans-serif" font-size="13" fill="#6d6860" text-anchor="middle">×</text>
+        <text x="77.2" y="32.5" font-family="Helvetica Neue, Arial, sans-serif" font-size="13" fill="#6d6860" text-anchor="middle">×</text>
+        <text x="92" y="32.5" font-family="Helvetica Neue, Arial, sans-serif" font-size="13" fill="#6d6860" text-anchor="middle">×</text>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="7.4" fill="#6d6860" text-anchor="middle">
+          <text x="18" y="146">R</text><text x="32.8" y="146">5</text>
+        </g>
+      </svg>
+      <div class="cap">Drop power <span class="rec">R 5</span></div>
+      <div class="sub">one finger · drop tunings</div>
+    </div>
+
+    <div class="chord">
+      <svg viewBox="0 0 110 150" xmlns="http://www.w3.org/2000/svg">
+        <line x1="18" y1="36" x2="92" y2="36" stroke="#6d6860" stroke-width="3"/>
+        <line x1="18" y1="60" x2="92" y2="60" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="84" x2="92" y2="84" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="108" x2="92" y2="108" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="132" x2="92" y2="132" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="36" x2="18" y2="132" stroke="#6d6860" stroke-width="2"/><line x1="32.8" y1="36" x2="32.8" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="47.6" y1="36" x2="47.6" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="62.4" y1="36" x2="62.4" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="77.2" y1="36" x2="77.2" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="92" y1="36" x2="92" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <circle cx="18" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <circle cx="32.8" cy="72" r="8.2" fill="#232126"/><circle cx="47.6" cy="72" r="8.2" fill="#232126"/><circle cx="62.4" cy="48" r="8.2" fill="#232126"/>
+        <circle cx="77.2" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <circle cx="92" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="8" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="32.8" y="74.8">5</text><text x="47.6" y="74.8">R</text><text x="62.4" y="50.8">3</text>
+        </g>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="7.4" fill="#6d6860" text-anchor="middle">
+          <text x="18" y="146">R</text><text x="32.8" y="146">5</text><text x="47.6" y="146">R</text><text x="62.4" y="146">3</text><text x="77.2" y="146">5</text><text x="92" y="146">R</text>
+        </g>
+      </svg>
+      <div class="cap">E major <span class="rec">R 5 R 3 5 R</span></div>
+      <div class="sub">E-shape · movable</div>
+    </div>
+
+    <div class="chord">
+      <svg viewBox="0 0 110 150" xmlns="http://www.w3.org/2000/svg">
+        <line x1="18" y1="36" x2="92" y2="36" stroke="#6d6860" stroke-width="3"/>
+        <line x1="18" y1="60" x2="92" y2="60" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="84" x2="92" y2="84" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="108" x2="92" y2="108" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="132" x2="92" y2="132" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="36" x2="18" y2="132" stroke="#6d6860" stroke-width="2"/><line x1="32.8" y1="36" x2="32.8" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="47.6" y1="36" x2="47.6" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="62.4" y1="36" x2="62.4" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="77.2" y1="36" x2="77.2" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="92" y1="36" x2="92" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <circle cx="18" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <circle cx="32.8" cy="72" r="8.2" fill="#232126"/><circle cx="47.6" cy="72" r="8.2" fill="#232126"/>
+        <circle cx="62.4" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <circle cx="77.2" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <circle cx="92" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="8" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="32.8" y="74.8">5</text><text x="47.6" y="74.8">R</text>
+        </g>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="7.4" fill="#6d6860" text-anchor="middle">
+          <text x="18" y="146">R</text><text x="32.8" y="146">5</text><text x="47.6" y="146">R</text><text x="62.4" y="146">♭3</text><text x="77.2" y="146">5</text><text x="92" y="146">R</text>
+        </g>
+      </svg>
+      <div class="cap">E minor <span class="rec">R 5 R ♭3 5 R</span></div>
+      <div class="sub">E-shape · movable</div>
+    </div>
+
+    <div class="chord">
+      <svg viewBox="0 0 110 150" xmlns="http://www.w3.org/2000/svg">
+        <line x1="18" y1="36" x2="92" y2="36" stroke="#6d6860" stroke-width="3"/>
+        <line x1="18" y1="60" x2="92" y2="60" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="84" x2="92" y2="84" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="108" x2="92" y2="108" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="132" x2="92" y2="132" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="36" x2="18" y2="132" stroke="#6d6860" stroke-width="2"/><line x1="32.8" y1="36" x2="32.8" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="47.6" y1="36" x2="47.6" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="62.4" y1="36" x2="62.4" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="77.2" y1="36" x2="77.2" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="92" y1="36" x2="92" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <text x="18" y="32.5" font-family="Helvetica Neue, Arial, sans-serif" font-size="13" fill="#6d6860" text-anchor="middle">×</text>
+        <circle cx="32.8" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <circle cx="47.6" cy="72" r="8.2" fill="#232126"/><circle cx="62.4" cy="72" r="8.2" fill="#232126"/><circle cx="77.2" cy="72" r="8.2" fill="#232126"/>
+        <circle cx="92" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="8" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="47.6" y="74.8">5</text><text x="62.4" y="74.8">R</text><text x="77.2" y="74.8">3</text>
+        </g>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="7.4" fill="#6d6860" text-anchor="middle">
+          <text x="32.8" y="146">R</text><text x="47.6" y="146">5</text><text x="62.4" y="146">R</text><text x="77.2" y="146">3</text><text x="92" y="146">5</text>
+        </g>
+      </svg>
+      <div class="cap">A major <span class="rec">R 5 R 3 5</span></div>
+      <div class="sub">A-shape · movable</div>
+    </div>
+
+    <div class="chord">
+      <svg viewBox="0 0 110 150" xmlns="http://www.w3.org/2000/svg">
+        <line x1="18" y1="36" x2="92" y2="36" stroke="#6d6860" stroke-width="3"/>
+        <line x1="18" y1="60" x2="92" y2="60" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="84" x2="92" y2="84" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="108" x2="92" y2="108" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="132" x2="92" y2="132" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="36" x2="18" y2="132" stroke="#6d6860" stroke-width="2"/><line x1="32.8" y1="36" x2="32.8" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="47.6" y1="36" x2="47.6" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="62.4" y1="36" x2="62.4" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="77.2" y1="36" x2="77.2" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="92" y1="36" x2="92" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <text x="18" y="32.5" font-family="Helvetica Neue, Arial, sans-serif" font-size="13" fill="#6d6860" text-anchor="middle">×</text>
+        <circle cx="32.8" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <circle cx="47.6" cy="72" r="8.2" fill="#232126"/><circle cx="62.4" cy="72" r="8.2" fill="#232126"/><circle cx="77.2" cy="48" r="8.2" fill="#232126"/>
+        <circle cx="92" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="8" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="47.6" y="74.8">5</text><text x="62.4" y="74.8">R</text><text x="77.2" y="50.8">♭3</text>
+        </g>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="7.4" fill="#6d6860" text-anchor="middle">
+          <text x="32.8" y="146">R</text><text x="47.6" y="146">5</text><text x="62.4" y="146">R</text><text x="77.2" y="146">♭3</text><text x="92" y="146">5</text>
+        </g>
+      </svg>
+      <div class="cap">A minor <span class="rec">R 5 R ♭3 5</span></div>
+      <div class="sub">A-shape · movable</div>
+    </div>
+
+  </div>
+
+  <div class="chord-grid">
+
+    <div class="chord">
+      <svg viewBox="0 0 110 150" xmlns="http://www.w3.org/2000/svg">
+        <line x1="18" y1="36" x2="92" y2="36" stroke="#6d6860" stroke-width="3"/>
+        <line x1="18" y1="60" x2="92" y2="60" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="84" x2="92" y2="84" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="108" x2="92" y2="108" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="132" x2="92" y2="132" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="36" x2="18" y2="132" stroke="#6d6860" stroke-width="2"/><line x1="32.8" y1="36" x2="32.8" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="47.6" y1="36" x2="47.6" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="62.4" y1="36" x2="62.4" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="77.2" y1="36" x2="77.2" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="92" y1="36" x2="92" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <text x="18" y="32.5" font-family="Helvetica Neue, Arial, sans-serif" font-size="13" fill="#6d6860" text-anchor="middle">×</text>
+        <circle cx="32.8" cy="96" r="8.2" fill="#232126"/><circle cx="47.6" cy="72" r="8.2" fill="#232126"/>
+        <circle cx="62.4" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <circle cx="77.2" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <circle cx="92" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="8" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="32.8" y="98.8">R</text><text x="47.6" y="74.8">3</text>
+        </g>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="7.4" fill="#6d6860" text-anchor="middle">
+          <text x="32.8" y="146">R</text><text x="47.6" y="146">3</text><text x="62.4" y="146">5</text><text x="77.2" y="146">7</text><text x="92" y="146">3</text>
+        </g>
+      </svg>
+      <div class="cap">Cmaj7 <span class="rec">1 3 5 7</span></div>
+      <div class="sub">open</div>
+    </div>
+
+    <div class="chord">
+      <svg viewBox="0 0 110 150" xmlns="http://www.w3.org/2000/svg">
+        <line x1="18" y1="36" x2="92" y2="36" stroke="#6d6860" stroke-width="3"/>
+        <line x1="18" y1="60" x2="92" y2="60" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="84" x2="92" y2="84" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="108" x2="92" y2="108" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="132" x2="92" y2="132" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="36" x2="18" y2="132" stroke="#6d6860" stroke-width="2"/><line x1="32.8" y1="36" x2="32.8" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="47.6" y1="36" x2="47.6" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="62.4" y1="36" x2="62.4" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="77.2" y1="36" x2="77.2" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="92" y1="36" x2="92" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <circle cx="18" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <circle cx="32.8" cy="72" r="8.2" fill="#232126"/><circle cx="47.6" cy="48" r="8.2" fill="#232126"/><circle cx="62.4" cy="48" r="8.2" fill="#232126"/>
+        <circle cx="77.2" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <circle cx="92" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="8" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="32.8" y="74.8">5</text><text x="47.6" y="50.8">7</text><text x="62.4" y="50.8">3</text>
+        </g>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="7.4" fill="#6d6860" text-anchor="middle">
+          <text x="18" y="146">R</text><text x="32.8" y="146">5</text><text x="47.6" y="146">7</text><text x="62.4" y="146">3</text><text x="77.2" y="146">5</text><text x="92" y="146">R</text>
+        </g>
+      </svg>
+      <div class="cap">Emaj7 <span class="rec">1 3 5 7</span></div>
+      <div class="sub">movable</div>
+    </div>
+
+    <div class="chord">
+      <svg viewBox="0 0 110 150" xmlns="http://www.w3.org/2000/svg">
+        <line x1="18" y1="36" x2="92" y2="36" stroke="#6d6860" stroke-width="3"/>
+        <line x1="18" y1="60" x2="92" y2="60" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="84" x2="92" y2="84" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="108" x2="92" y2="108" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="132" x2="92" y2="132" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="36" x2="18" y2="132" stroke="#6d6860" stroke-width="2"/><line x1="32.8" y1="36" x2="32.8" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="47.6" y1="36" x2="47.6" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="62.4" y1="36" x2="62.4" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="77.2" y1="36" x2="77.2" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="92" y1="36" x2="92" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <text x="18" y="32.5" font-family="Helvetica Neue, Arial, sans-serif" font-size="13" fill="#6d6860" text-anchor="middle">×</text>
+        <circle cx="32.8" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <circle cx="47.6" cy="72" r="8.2" fill="#232126"/>
+        <circle cx="62.4" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <circle cx="77.2" cy="48" r="8.2" fill="#232126"/>
+        <circle cx="92" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="8" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="47.6" y="74.8">5</text><text x="77.2" y="50.8">♭3</text>
+        </g>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="7.4" fill="#6d6860" text-anchor="middle">
+          <text x="32.8" y="146">R</text><text x="47.6" y="146">5</text><text x="62.4" y="146">♭7</text><text x="77.2" y="146">♭3</text><text x="92" y="146">5</text>
+        </g>
+      </svg>
+      <div class="cap">Am7 <span class="rec">1 ♭3 5 ♭7</span></div>
+      <div class="sub">open</div>
+    </div>
+
+    <div class="chord">
+      <svg viewBox="0 0 110 150" xmlns="http://www.w3.org/2000/svg">
+        <line x1="18" y1="36" x2="92" y2="36" stroke="#6d6860" stroke-width="3"/>
+        <line x1="18" y1="60" x2="92" y2="60" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="84" x2="92" y2="84" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="108" x2="92" y2="108" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="132" x2="92" y2="132" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="36" x2="18" y2="132" stroke="#6d6860" stroke-width="2"/><line x1="32.8" y1="36" x2="32.8" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="47.6" y1="36" x2="47.6" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="62.4" y1="36" x2="62.4" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="77.2" y1="36" x2="77.2" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="92" y1="36" x2="92" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <circle cx="18" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <circle cx="32.8" cy="72" r="8.2" fill="#232126"/>
+        <circle cx="47.6" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <circle cx="62.4" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <circle cx="77.2" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <circle cx="92" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="8" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="32.8" y="74.8">5</text>
+        </g>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="7.4" fill="#6d6860" text-anchor="middle">
+          <text x="18" y="146">R</text><text x="32.8" y="146">5</text><text x="47.6" y="146">♭7</text><text x="62.4" y="146">♭3</text><text x="77.2" y="146">5</text><text x="92" y="146">R</text>
+        </g>
+      </svg>
+      <div class="cap">Em7 <span class="rec">1 ♭3 5 ♭7</span></div>
+      <div class="sub">movable</div>
+    </div>
+
+    <div class="chord">
+      <svg viewBox="0 0 110 150" xmlns="http://www.w3.org/2000/svg">
+        <line x1="18" y1="36" x2="92" y2="36" stroke="#6d6860" stroke-width="3"/>
+        <line x1="18" y1="60" x2="92" y2="60" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="84" x2="92" y2="84" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="108" x2="92" y2="108" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="132" x2="92" y2="132" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="36" x2="18" y2="132" stroke="#6d6860" stroke-width="2"/><line x1="32.8" y1="36" x2="32.8" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="47.6" y1="36" x2="47.6" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="62.4" y1="36" x2="62.4" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="77.2" y1="36" x2="77.2" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="92" y1="36" x2="92" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <circle cx="18" cy="96" r="8.2" fill="#232126"/><circle cx="32.8" cy="72" r="8.2" fill="#232126"/>
+        <circle cx="47.6" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <circle cx="62.4" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <circle cx="77.2" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <circle cx="92" cy="48" r="8.2" fill="#232126"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="8" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="18" y="98.8">R</text><text x="32.8" y="74.8">3</text><text x="92" y="50.8">R</text>
+        </g>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="7.4" fill="#6d6860" text-anchor="middle">
+          <text x="18" y="146">R</text><text x="32.8" y="146">3</text><text x="47.6" y="146">5</text><text x="62.4" y="146">♭7</text><text x="77.2" y="146">3</text><text x="92" y="146">R</text>
+        </g>
+      </svg>
+      <div class="cap">G7 <span class="rec">1 3 5 ♭7</span></div>
+      <div class="sub">open</div>
+    </div>
+
+    <div class="chord">
+      <svg viewBox="0 0 110 150" xmlns="http://www.w3.org/2000/svg">
+        <line x1="18" y1="36" x2="92" y2="36" stroke="#6d6860" stroke-width="3"/>
+        <line x1="18" y1="60" x2="92" y2="60" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="84" x2="92" y2="84" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="108" x2="92" y2="108" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="132" x2="92" y2="132" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="36" x2="18" y2="132" stroke="#6d6860" stroke-width="2"/><line x1="32.8" y1="36" x2="32.8" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="47.6" y1="36" x2="47.6" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="62.4" y1="36" x2="62.4" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="77.2" y1="36" x2="77.2" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="92" y1="36" x2="92" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <text x="18" y="32.5" font-family="Helvetica Neue, Arial, sans-serif" font-size="13" fill="#6d6860" text-anchor="middle">×</text>
+        <circle cx="32.8" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <circle cx="47.6" cy="72" r="8.2" fill="#232126"/><circle cx="62.4" cy="48" r="8.2" fill="#232126"/><circle cx="77.2" cy="48" r="8.2" fill="#232126"/>
+        <circle cx="92" cy="28" r="5.5" fill="none" stroke="#6d6860" stroke-width="1.5"/>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="8" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="47.6" y="74.8">5</text><text x="62.4" y="50.8">7</text><text x="77.2" y="50.8">♭3</text>
+        </g>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="7.4" fill="#6d6860" text-anchor="middle">
+          <text x="32.8" y="146">R</text><text x="47.6" y="146">5</text><text x="62.4" y="146">7</text><text x="77.2" y="146">♭3</text><text x="92" y="146">5</text>
+        </g>
+      </svg>
+      <div class="cap">Am(maj7) <span class="rec">1 ♭3 5 7</span></div>
+      <div class="sub">harmonic minor's chord</div>
+    </div>
+
+    <div class="chord">
+      <svg viewBox="0 0 110 150" xmlns="http://www.w3.org/2000/svg">
+        <line x1="18" y1="36" x2="92" y2="36" stroke="#6d6860" stroke-width="3"/>
+        <line x1="18" y1="60" x2="92" y2="60" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="84" x2="92" y2="84" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="108" x2="92" y2="108" stroke="#c9c3b8" stroke-width="1.5"/><line x1="18" y1="132" x2="92" y2="132" stroke="#c9c3b8" stroke-width="1.5"/>
+        <line x1="18" y1="36" x2="18" y2="132" stroke="#6d6860" stroke-width="2"/><line x1="32.8" y1="36" x2="32.8" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="47.6" y1="36" x2="47.6" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="62.4" y1="36" x2="62.4" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <line x1="77.2" y1="36" x2="77.2" y2="132" stroke="#9a958c" stroke-width="1.4"/><line x1="92" y1="36" x2="92" y2="132" stroke="#9a958c" stroke-width="1.4"/>
+        <text x="18" y="32.5" font-family="Helvetica Neue, Arial, sans-serif" font-size="13" fill="#6d6860" text-anchor="middle">×</text>
+        <circle cx="32.8" cy="96" r="8.2" fill="#232126"/><circle cx="47.6" cy="120" r="8.2" fill="#232126"/><circle cx="62.4" cy="72" r="8.2" fill="#232126"/><circle cx="77.2" cy="120" r="8.2" fill="#232126"/>
+        <text x="92" y="32.5" font-family="Helvetica Neue, Arial, sans-serif" font-size="13" fill="#6d6860" text-anchor="middle">×</text>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="8" font-weight="bold" fill="#fff" text-anchor="middle">
+          <text x="32.8" y="98.8">R</text><text x="47.6" y="122.8">♭5</text><text x="62.4" y="74.8">6</text><text x="77.2" y="122.8">♭3</text>
+        </g>
+        <g font-family="Helvetica Neue, Arial, sans-serif" font-size="7.4" fill="#6d6860" text-anchor="middle">
+          <text x="32.8" y="146">R</text><text x="47.6" y="146">♭5</text><text x="62.4" y="146">6</text><text x="77.2" y="146">♭3</text>
+        </g>
+      </svg>
+      <div class="cap">C°7 <span class="rec">1 ♭3 ♭5 6</span></div>
+      <div class="sub">diminished</div>
+    </div>
+
+  </div>
+
+  <div class="legend"><b>How to read:</b> filled dot = fretted note (label = its role: R root, 3rd, 5th, ♭7…) · ○ = open string · × = muted · degree row under each diagram = what that string plays · movable shapes are shown at the nut — slide the whole shape anywhere.</div>
+
+  <div class="p2-tips">
+    <div class="tip"><b>OCTAVE TWINS</b> — the same note is always 2 strings up + 2 frets away (3 frets across G→B). Find one note and you've found them all.</div>
+    <div class="tip"><b>SCALES = 2 LADDERS + A GAP</b> — spot the two tetrachords on the neck and you own the whole scale. Chords are just the 1st + 3rd note of each ladder.</div>
+  </div>
+
+  <div class="foot">
+    <span class="try">IDENTIFY, DON'T MEMORISE: <span class="mono">find the 1</span> → <span class="mono">walk the steps</span> → <span class="mono">the shape names itself.</span></span>
+    <span class="src">Interval Lab · github.com/ogomez34/interval-lab · poster 2/2</span>
+  </div>
+
+</div>
+
+<!-- ================= PAGE 3 · FRETBOARD MAPS ================= -->
+<div class="poster page3">
+
+  <div class="head">
+    <h1>FRETBOARD <span class="accent">MAPS</span></h1>
+    <span class="sub">standard E · drop C — every note, every interval</span>
+  </div>
+
+  <div class="p3-legend"><b>How to use:</b> pick any fret as <b>1</b> → the top ruler names every distance from it. The small label under each note = that note's distance from the <b>open string</b>. Green = octave (12 frets = same note). The neck repeats every 12 frets.</div>
+
+  
+  <div class="tune-head">
+    <h3>STANDARD E &nbsp;<span class="accent">·</span>&nbsp; E2 · A2 · D3 · G3 · B3 · E4</h3>
+    <span class="spec">strings low → high · <span class="m3">G → B = major 3rd (every other pair is a perfect 4th)</span></span>
+  </div>
+  <div class="board-grid">
+    <div class="b-label">RULER</div><div class="ruler-cell ruler-perfect">R</div><div class="ruler-cell ruler-dissonant">♭2</div><div class="ruler-cell ruler-dissonant">2</div><div class="ruler-cell ruler-imperfect">♭3</div><div class="ruler-cell ruler-imperfect">3</div><div class="ruler-cell ruler-perfect">4</div><div class="ruler-cell ruler-dissonant">♭5</div><div class="ruler-cell ruler-perfect">5</div><div class="ruler-cell ruler-imperfect">♭6</div><div class="ruler-cell ruler-imperfect">6</div><div class="ruler-cell ruler-dissonant">♭7</div><div class="ruler-cell ruler-dissonant">7</div><div class="ruler-cell ruler-perfect">P8</div>
+    <div class="b-label">FRET</div><div class="fret-num">0</div><div class="fret-num">1</div><div class="fret-num">2</div><div class="fret-num">3<span class="dot">•</span></div><div class="fret-num">4</div><div class="fret-num">5<span class="dot">•</span></div><div class="fret-num">6</div><div class="fret-num">7<span class="dot">•</span></div><div class="fret-num">8</div><div class="fret-num">9<span class="dot">•</span></div><div class="fret-num">10</div><div class="fret-num">11</div><div class="fret-num">12<span class="dot">••</span></div>
+    <div class="str-name" data-pair="P4">E4</div><div class="note-cell nat"><span class="note">E</span><span class="iv">1</span></div><div class="note-cell nat"><span class="note">F</span><span class="iv">♭2</span></div><div class="note-cell acc"><span class="note">F#</span><span class="iv">2</span></div><div class="note-cell nat"><span class="note">G</span><span class="iv">♭3</span></div><div class="note-cell acc"><span class="note">G#</span><span class="iv">3</span></div><div class="note-cell nat"><span class="note">A</span><span class="iv">4</span></div><div class="note-cell acc"><span class="note">A#</span><span class="iv">♭5</span></div><div class="note-cell nat"><span class="note">B</span><span class="iv">5</span></div><div class="note-cell nat"><span class="note">C</span><span class="iv">♭6</span></div><div class="note-cell acc"><span class="note">C#</span><span class="iv">6</span></div><div class="note-cell nat"><span class="note">D</span><span class="iv">♭7</span></div><div class="note-cell acc"><span class="note">D#</span><span class="iv">7</span></div><div class="note-cell oct"><span class="note">E</span><span class="iv">8</span></div><div class="str-name m3" data-pair="M3">B3</div><div class="note-cell nat"><span class="note">B</span><span class="iv">1</span></div><div class="note-cell nat"><span class="note">C</span><span class="iv">♭2</span></div><div class="note-cell acc"><span class="note">C#</span><span class="iv">2</span></div><div class="note-cell nat"><span class="note">D</span><span class="iv">♭3</span></div><div class="note-cell acc"><span class="note">D#</span><span class="iv">3</span></div><div class="note-cell nat"><span class="note">E</span><span class="iv">4</span></div><div class="note-cell nat"><span class="note">F</span><span class="iv">♭5</span></div><div class="note-cell acc"><span class="note">F#</span><span class="iv">5</span></div><div class="note-cell nat"><span class="note">G</span><span class="iv">♭6</span></div><div class="note-cell acc"><span class="note">G#</span><span class="iv">6</span></div><div class="note-cell nat"><span class="note">A</span><span class="iv">♭7</span></div><div class="note-cell acc"><span class="note">A#</span><span class="iv">7</span></div><div class="note-cell oct"><span class="note">B</span><span class="iv">8</span></div><div class="str-name" data-pair="P4">G3</div><div class="note-cell nat"><span class="note">G</span><span class="iv">1</span></div><div class="note-cell acc"><span class="note">G#</span><span class="iv">♭2</span></div><div class="note-cell nat"><span class="note">A</span><span class="iv">2</span></div><div class="note-cell acc"><span class="note">A#</span><span class="iv">♭3</span></div><div class="note-cell nat"><span class="note">B</span><span class="iv">3</span></div><div class="note-cell nat"><span class="note">C</span><span class="iv">4</span></div><div class="note-cell acc"><span class="note">C#</span><span class="iv">♭5</span></div><div class="note-cell nat"><span class="note">D</span><span class="iv">5</span></div><div class="note-cell acc"><span class="note">D#</span><span class="iv">♭6</span></div><div class="note-cell nat"><span class="note">E</span><span class="iv">6</span></div><div class="note-cell nat"><span class="note">F</span><span class="iv">♭7</span></div><div class="note-cell acc"><span class="note">F#</span><span class="iv">7</span></div><div class="note-cell oct"><span class="note">G</span><span class="iv">8</span></div><div class="str-name" data-pair="P4">D3</div><div class="note-cell nat"><span class="note">D</span><span class="iv">1</span></div><div class="note-cell acc"><span class="note">D#</span><span class="iv">♭2</span></div><div class="note-cell nat"><span class="note">E</span><span class="iv">2</span></div><div class="note-cell nat"><span class="note">F</span><span class="iv">♭3</span></div><div class="note-cell acc"><span class="note">F#</span><span class="iv">3</span></div><div class="note-cell nat"><span class="note">G</span><span class="iv">4</span></div><div class="note-cell acc"><span class="note">G#</span><span class="iv">♭5</span></div><div class="note-cell nat"><span class="note">A</span><span class="iv">5</span></div><div class="note-cell acc"><span class="note">A#</span><span class="iv">♭6</span></div><div class="note-cell nat"><span class="note">B</span><span class="iv">6</span></div><div class="note-cell nat"><span class="note">C</span><span class="iv">♭7</span></div><div class="note-cell acc"><span class="note">C#</span><span class="iv">7</span></div><div class="note-cell oct"><span class="note">D</span><span class="iv">8</span></div><div class="str-name" data-pair="P4">A2</div><div class="note-cell nat"><span class="note">A</span><span class="iv">1</span></div><div class="note-cell acc"><span class="note">A#</span><span class="iv">♭2</span></div><div class="note-cell nat"><span class="note">B</span><span class="iv">2</span></div><div class="note-cell nat"><span class="note">C</span><span class="iv">♭3</span></div><div class="note-cell acc"><span class="note">C#</span><span class="iv">3</span></div><div class="note-cell nat"><span class="note">D</span><span class="iv">4</span></div><div class="note-cell acc"><span class="note">D#</span><span class="iv">♭5</span></div><div class="note-cell nat"><span class="note">E</span><span class="iv">5</span></div><div class="note-cell nat"><span class="note">F</span><span class="iv">♭6</span></div><div class="note-cell acc"><span class="note">F#</span><span class="iv">6</span></div><div class="note-cell nat"><span class="note">G</span><span class="iv">♭7</span></div><div class="note-cell acc"><span class="note">G#</span><span class="iv">7</span></div><div class="note-cell oct"><span class="note">A</span><span class="iv">8</span></div><div class="str-name" data-pair="">E2</div><div class="note-cell nat"><span class="note">E</span><span class="iv">1</span></div><div class="note-cell nat"><span class="note">F</span><span class="iv">♭2</span></div><div class="note-cell acc"><span class="note">F#</span><span class="iv">2</span></div><div class="note-cell nat"><span class="note">G</span><span class="iv">♭3</span></div><div class="note-cell acc"><span class="note">G#</span><span class="iv">3</span></div><div class="note-cell nat"><span class="note">A</span><span class="iv">4</span></div><div class="note-cell acc"><span class="note">A#</span><span class="iv">♭5</span></div><div class="note-cell nat"><span class="note">B</span><span class="iv">5</span></div><div class="note-cell nat"><span class="note">C</span><span class="iv">♭6</span></div><div class="note-cell acc"><span class="note">C#</span><span class="iv">6</span></div><div class="note-cell nat"><span class="note">D</span><span class="iv">♭7</span></div><div class="note-cell acc"><span class="note">D#</span><span class="iv">7</span></div><div class="note-cell oct"><span class="note">E</span><span class="iv">8</span></div>
+  </div>
+
+  
+  <div class="tune-head">
+    <h3>DROP C &nbsp;<span class="accent">·</span>&nbsp; C2 · G2 · C3 · F3 · A3 · D4</h3>
+    <span class="spec">strings low → high · <span class="m3">F → A = major 3rd (every other pair is a perfect 4th)</span></span>
+  </div>
+  <div class="board-grid">
+    <div class="b-label">RULER</div><div class="ruler-cell ruler-perfect">R</div><div class="ruler-cell ruler-dissonant">♭2</div><div class="ruler-cell ruler-dissonant">2</div><div class="ruler-cell ruler-imperfect">♭3</div><div class="ruler-cell ruler-imperfect">3</div><div class="ruler-cell ruler-perfect">4</div><div class="ruler-cell ruler-dissonant">♭5</div><div class="ruler-cell ruler-perfect">5</div><div class="ruler-cell ruler-imperfect">♭6</div><div class="ruler-cell ruler-imperfect">6</div><div class="ruler-cell ruler-dissonant">♭7</div><div class="ruler-cell ruler-dissonant">7</div><div class="ruler-cell ruler-perfect">P8</div>
+    <div class="b-label">FRET</div><div class="fret-num">0</div><div class="fret-num">1</div><div class="fret-num">2</div><div class="fret-num">3<span class="dot">•</span></div><div class="fret-num">4</div><div class="fret-num">5<span class="dot">•</span></div><div class="fret-num">6</div><div class="fret-num">7<span class="dot">•</span></div><div class="fret-num">8</div><div class="fret-num">9<span class="dot">•</span></div><div class="fret-num">10</div><div class="fret-num">11</div><div class="fret-num">12<span class="dot">••</span></div>
+    <div class="str-name" data-pair="P4">D4</div><div class="note-cell nat"><span class="note">D</span><span class="iv">1</span></div><div class="note-cell acc"><span class="note">D#</span><span class="iv">♭2</span></div><div class="note-cell nat"><span class="note">E</span><span class="iv">2</span></div><div class="note-cell nat"><span class="note">F</span><span class="iv">♭3</span></div><div class="note-cell acc"><span class="note">F#</span><span class="iv">3</span></div><div class="note-cell nat"><span class="note">G</span><span class="iv">4</span></div><div class="note-cell acc"><span class="note">G#</span><span class="iv">♭5</span></div><div class="note-cell nat"><span class="note">A</span><span class="iv">5</span></div><div class="note-cell acc"><span class="note">A#</span><span class="iv">♭6</span></div><div class="note-cell nat"><span class="note">B</span><span class="iv">6</span></div><div class="note-cell nat"><span class="note">C</span><span class="iv">♭7</span></div><div class="note-cell acc"><span class="note">C#</span><span class="iv">7</span></div><div class="note-cell oct"><span class="note">D</span><span class="iv">8</span></div><div class="str-name m3" data-pair="M3">A3</div><div class="note-cell nat"><span class="note">A</span><span class="iv">1</span></div><div class="note-cell acc"><span class="note">A#</span><span class="iv">♭2</span></div><div class="note-cell nat"><span class="note">B</span><span class="iv">2</span></div><div class="note-cell nat"><span class="note">C</span><span class="iv">♭3</span></div><div class="note-cell acc"><span class="note">C#</span><span class="iv">3</span></div><div class="note-cell nat"><span class="note">D</span><span class="iv">4</span></div><div class="note-cell acc"><span class="note">D#</span><span class="iv">♭5</span></div><div class="note-cell nat"><span class="note">E</span><span class="iv">5</span></div><div class="note-cell nat"><span class="note">F</span><span class="iv">♭6</span></div><div class="note-cell acc"><span class="note">F#</span><span class="iv">6</span></div><div class="note-cell nat"><span class="note">G</span><span class="iv">♭7</span></div><div class="note-cell acc"><span class="note">G#</span><span class="iv">7</span></div><div class="note-cell oct"><span class="note">A</span><span class="iv">8</span></div><div class="str-name" data-pair="P4">F3</div><div class="note-cell nat"><span class="note">F</span><span class="iv">1</span></div><div class="note-cell acc"><span class="note">F#</span><span class="iv">♭2</span></div><div class="note-cell nat"><span class="note">G</span><span class="iv">2</span></div><div class="note-cell acc"><span class="note">G#</span><span class="iv">♭3</span></div><div class="note-cell nat"><span class="note">A</span><span class="iv">3</span></div><div class="note-cell acc"><span class="note">A#</span><span class="iv">4</span></div><div class="note-cell nat"><span class="note">B</span><span class="iv">♭5</span></div><div class="note-cell nat"><span class="note">C</span><span class="iv">5</span></div><div class="note-cell acc"><span class="note">C#</span><span class="iv">♭6</span></div><div class="note-cell nat"><span class="note">D</span><span class="iv">6</span></div><div class="note-cell acc"><span class="note">D#</span><span class="iv">♭7</span></div><div class="note-cell nat"><span class="note">E</span><span class="iv">7</span></div><div class="note-cell oct"><span class="note">F</span><span class="iv">8</span></div><div class="str-name" data-pair="P4">C3</div><div class="note-cell nat"><span class="note">C</span><span class="iv">1</span></div><div class="note-cell acc"><span class="note">C#</span><span class="iv">♭2</span></div><div class="note-cell nat"><span class="note">D</span><span class="iv">2</span></div><div class="note-cell acc"><span class="note">D#</span><span class="iv">♭3</span></div><div class="note-cell nat"><span class="note">E</span><span class="iv">3</span></div><div class="note-cell nat"><span class="note">F</span><span class="iv">4</span></div><div class="note-cell acc"><span class="note">F#</span><span class="iv">♭5</span></div><div class="note-cell nat"><span class="note">G</span><span class="iv">5</span></div><div class="note-cell acc"><span class="note">G#</span><span class="iv">♭6</span></div><div class="note-cell nat"><span class="note">A</span><span class="iv">6</span></div><div class="note-cell acc"><span class="note">A#</span><span class="iv">♭7</span></div><div class="note-cell nat"><span class="note">B</span><span class="iv">7</span></div><div class="note-cell oct"><span class="note">C</span><span class="iv">8</span></div><div class="str-name" data-pair="P4">G2</div><div class="note-cell nat"><span class="note">G</span><span class="iv">1</span></div><div class="note-cell acc"><span class="note">G#</span><span class="iv">♭2</span></div><div class="note-cell nat"><span class="note">A</span><span class="iv">2</span></div><div class="note-cell acc"><span class="note">A#</span><span class="iv">♭3</span></div><div class="note-cell nat"><span class="note">B</span><span class="iv">3</span></div><div class="note-cell nat"><span class="note">C</span><span class="iv">4</span></div><div class="note-cell acc"><span class="note">C#</span><span class="iv">♭5</span></div><div class="note-cell nat"><span class="note">D</span><span class="iv">5</span></div><div class="note-cell acc"><span class="note">D#</span><span class="iv">♭6</span></div><div class="note-cell nat"><span class="note">E</span><span class="iv">6</span></div><div class="note-cell nat"><span class="note">F</span><span class="iv">♭7</span></div><div class="note-cell acc"><span class="note">F#</span><span class="iv">7</span></div><div class="note-cell oct"><span class="note">G</span><span class="iv">8</span></div><div class="str-name" data-pair="">C2</div><div class="note-cell nat"><span class="note">C</span><span class="iv">1</span></div><div class="note-cell acc"><span class="note">C#</span><span class="iv">♭2</span></div><div class="note-cell nat"><span class="note">D</span><span class="iv">2</span></div><div class="note-cell acc"><span class="note">D#</span><span class="iv">♭3</span></div><div class="note-cell nat"><span class="note">E</span><span class="iv">3</span></div><div class="note-cell nat"><span class="note">F</span><span class="iv">4</span></div><div class="note-cell acc"><span class="note">F#</span><span class="iv">♭5</span></div><div class="note-cell nat"><span class="note">G</span><span class="iv">5</span></div><div class="note-cell acc"><span class="note">G#</span><span class="iv">♭6</span></div><div class="note-cell nat"><span class="note">A</span><span class="iv">6</span></div><div class="note-cell acc"><span class="note">A#</span><span class="iv">♭7</span></div><div class="note-cell nat"><span class="note">B</span><span class="iv">7</span></div><div class="note-cell oct"><span class="note">C</span><span class="iv">8</span></div>
+  </div>
+
+
+  <div class="p3-tips">
+    <div class="tip3"><b>THE RULER</b> — the top row is every distance from any fret you pick as 1. Slide it anywhere; the labels never change. 1 fret = 1 semitone.</div>
+    <div class="tip3"><b>OCTAVE TWINS</b> — the same note sits 2 strings up + 2 frets away. Cross the major-3rd pair (G→B · F→A) and add +1 fret. Find one copy, find them all.</div>
+    <div class="tip3"><b>FRET-5 RULE</b> — the next string's open note = this string at fret 5 — fret 4 across the major-3rd pair. That single rule builds both tunings.</div>
+    <div class="tip3"><b>FRET 12 = OCTAVE</b> — every string repeats after 12 frets, so this board is the whole neck, forever. Note names: white = natural · amber = ♯/♭ · C♯ = D♭.</div>
+  </div>
+
+  <div class="foot">
+    <span class="try">DRILL: <span class="mono">name a note</span> → <span class="mono">find every copy</span> → <span class="mono">check with octave twins</span></span>
+    <span class="src">Interval Lab · github.com/ogomez34/interval-lab · poster 3/3</span>
+  </div>
+
+</div>
+
+</body>
+</html>

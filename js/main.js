@@ -6,6 +6,7 @@ import { renderPractice, initPractice } from './tabs/practice.js';
 import { renderEar, initEar } from './tabs/ear.js';
 import { renderGuitar, initGuitar } from './tabs/guitar.js';
 import { renderShapes, initShapes } from './tabs/shapes.js';
+import { renderPosters, initPosters } from './tabs/posters.js';
 import { initPresets } from './presets.js';
 import { initInfoBox } from './infobox.js';
 import { initNavLayout } from './navlayout.js';
@@ -18,6 +19,7 @@ document.getElementById('practice').innerHTML = renderPractice();
 document.getElementById('ear').innerHTML = renderEar();
 document.getElementById('guitar').innerHTML = renderGuitar();
 document.getElementById('shapes').innerHTML = renderShapes();
+document.getElementById('posters').innerHTML = renderPosters();
 
 // ---- Initialize each tab ----
 initLearn();
@@ -26,6 +28,7 @@ initPractice();
 initEar();
 initGuitar();
 initShapes();
+initPosters();
 initPresets();
 initInfoBox();
 initNavLayout();

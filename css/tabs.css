@@ -168,3 +168,26 @@
   width: 140px;
 }
 
+/* ---- Posters tab ---- */
+.poster-hint {
+  font-size: 13px;
+  color: var(--muted);
+  align-self: center;
+}
+
+.poster-frame {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--panel);
+}
+
+.poster-frame iframe {
+  display: block;
+  width: 100%;
+  height: 75vh;
+  min-height: 420px;
+  border: 0;
+  background: #ffffff;
+}
+
